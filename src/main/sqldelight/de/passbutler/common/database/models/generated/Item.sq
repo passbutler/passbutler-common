@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS ItemModel(
+    `id` TEXT NOT NULL,
+    `userId` TEXT NOT NULL,
+    `data` TEXT NOT NULL,
+    `deleted` INTEGER NOT NULL,
+    `modified` INTEGER NOT NULL,
+    `created` INTEGER NOT NULL,
+    PRIMARY KEY(`id`),
+    FOREIGN KEY(`userId`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS `index_items_userId` ON ItemModel(`userId`);
+
+findAll:
+SELECT * FROM ItemModel ORDER BY `created`;
+
+findById:
+SELECT * FROM ItemModel WHERE `id` = ? ORDER BY `created`;
+
+insert:
+INSERT OR REPLACE INTO ItemModel(`id`, `userId`, `data`, `deleted`, `modified`, `created`) VALUES ?;
+
+update:
+UPDATE OR REPLACE ItemModel SET `data` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;

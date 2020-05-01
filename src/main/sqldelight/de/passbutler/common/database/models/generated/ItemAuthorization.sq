@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS ItemAuthorizationModel (
+    `id` TEXT NOT NULL,
+    `userId` TEXT NOT NULL,
+    `itemId` TEXT NOT NULL,
+    `itemKey` TEXT NOT NULL,
+    `readOnly` INTEGER NOT NULL,
+    `deleted` INTEGER NOT NULL,
+    `modified` INTEGER NOT NULL,
+    `created` INTEGER NOT NULL,
+    PRIMARY KEY(`id`),
+    FOREIGN KEY(`userId`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE ,
+    FOREIGN KEY(`itemId`) REFERENCES ItemModel(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS `index_item_authorizations_userId` ON ItemAuthorizationModel(`userId`);
+CREATE INDEX IF NOT EXISTS `index_item_authorizations_itemId` ON ItemAuthorizationModel(`itemId`);
+
+findAll:
+SELECT * FROM ItemAuthorizationModel ORDER BY `created`;
+
+findById:
+SELECT * FROM ItemAuthorizationModel WHERE `id` = ? ORDER BY `created`;
+
+insert:
+INSERT OR REPLACE INTO ItemAuthorizationModel(`id`, `userId`, `itemId`, `itemKey`, `readOnly`, `deleted`, `modified`, `created`) VALUES ?;
+
+update:
+UPDATE OR REPLACE ItemAuthorizationModel SET `userId` = ?, `itemId` = ?, `itemKey` = ?, `readOnly` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;
