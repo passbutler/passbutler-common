@@ -20,28 +20,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
-object LocalDatabase {
-    fun createInstance(driver: SqlDriver) : PassButlerDatabase {
-        return PassButlerDatabase(driver)
-    }
-
-    fun createSchema(driver: SqlDriver) {
-        PassButlerDatabase.Schema.create(driver)
-    }
-
-    const val ENABLE_FOREIGN_KEYS_SQL = "PRAGMA foreign_keys=ON;"
-}
+const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE = "PRAGMA foreign_keys=TRUE;"
+const val LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE = "PRAGMA defer_foreign_keys=TRUE;"
 
 class LocalRepository(
-    private val localDatabase: PassButlerDatabase,
-    private val deleteDatabaseDelegate: suspend () -> Unit
+    private val localDatabase: PassButlerDatabase
 ) : UserDao by UserDao.Implementation(localDatabase.userQueries),
     ItemDao by ItemDao.Implementation(localDatabase.itemQueries),
-    ItemAuthorizationDao by ItemAuthorizationDao.Implementation(localDatabase.itemAuthorizationQueries){
+    ItemAuthorizationDao by ItemAuthorizationDao.Implementation(localDatabase.itemAuthorizationQueries) {
     suspend fun reset() {
         withContext(Dispatchers.IO) {
-            // TODO: First delete all data with disabled foreign key checks
-            deleteDatabaseDelegate.invoke()
+            // TODO: Defer foreign keys first and vacuum finally?
+            localDatabase.transaction {
+                localDatabase.itemAuthorizationQueries.deleteAll()
+                localDatabase.itemQueries.deleteAll()
+                localDatabase.userQueries.deleteAll()
+            }
         }
     }
 }
@@ -165,6 +159,12 @@ interface ItemAuthorizationDao {
     suspend fun findItemAuthorization(id: String): ItemAuthorization? {
         return withContext(Dispatchers.IO) {
             itemAuthorizationQueries.findById(id).executeAsOneOrNull()?.toItemAuthorization()
+        }
+    }
+
+    suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
+        return withContext(Dispatchers.IO) {
+            itemAuthorizationQueries.findForItem(item.id).executeAsList().map { it.toItemAuthorization() }
         }
     }
 

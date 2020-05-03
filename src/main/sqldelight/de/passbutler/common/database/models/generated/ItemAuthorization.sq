@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS ItemAuthorizationModel (
     `modified` INTEGER NOT NULL,
     `created` INTEGER NOT NULL,
     PRIMARY KEY(`id`),
-    FOREIGN KEY(`userId`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE ,
+    FOREIGN KEY(`userId`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE,
     FOREIGN KEY(`itemId`) REFERENCES ItemModel(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
 );
 
@@ -21,8 +21,14 @@ SELECT * FROM ItemAuthorizationModel ORDER BY `created`;
 findById:
 SELECT * FROM ItemAuthorizationModel WHERE `id` = ? ORDER BY `created`;
 
+findForItem:
+SELECT * FROM ItemAuthorizationModel WHERE `itemId` = ?;
+
 insert:
 INSERT OR REPLACE INTO ItemAuthorizationModel(`id`, `userId`, `itemId`, `itemKey`, `readOnly`, `deleted`, `modified`, `created`) VALUES ?;
 
 update:
 UPDATE OR REPLACE ItemAuthorizationModel SET `userId` = ?, `itemId` = ?, `itemKey` = ?, `readOnly` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;
+
+deleteAll:
+DELETE FROM ItemAuthorizationModel;

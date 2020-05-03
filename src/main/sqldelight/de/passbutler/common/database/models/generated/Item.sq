@@ -22,3 +22,6 @@ INSERT OR REPLACE INTO ItemModel(`id`, `userId`, `data`, `deleted`, `modified`, 
 
 update:
 UPDATE OR REPLACE ItemModel SET `data` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;
+
+deleteAll:
+DELETE FROM ItemModel;
