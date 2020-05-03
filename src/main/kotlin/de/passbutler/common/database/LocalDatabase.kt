@@ -1,7 +1,5 @@
 package de.passbutler.common.database
 
-import com.squareup.sqldelight.Query
-import com.squareup.sqldelight.db.SqlDriver
 import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
@@ -93,12 +91,6 @@ interface UserDao {
 interface ItemDao {
     val itemQueries: ItemQueries
 
-    suspend fun itemsObservable(): Query<ItemModel> {
-        return withContext(Dispatchers.IO) {
-            itemQueries.findAll()
-        }
-    }
-
     suspend fun findAllItems(): List<Item> {
         return withContext(Dispatchers.IO) {
             itemQueries.findAll().executeAsList().map { it.toItem() }
@@ -143,12 +135,6 @@ interface ItemDao {
 
 interface ItemAuthorizationDao {
     val itemAuthorizationQueries: ItemAuthorizationQueries
-
-    suspend fun itemAuthorizationsObservable(): Query<ItemAuthorizationModel> {
-        return withContext(Dispatchers.IO) {
-            itemAuthorizationQueries.findAll()
-        }
-    }
 
     suspend fun findAllItemAuthorizations(): List<ItemAuthorization> {
         return withContext(Dispatchers.IO) {
@@ -215,7 +201,7 @@ fun Date.toLong(): Long = this.time
  * Model type converters
  */
 
-private fun UserModel.toUser(): User {
+internal fun UserModel.toUser(): User {
     // TODO: Catch exception?
     return User(
         username = username,
@@ -231,7 +217,7 @@ private fun UserModel.toUser(): User {
     )
 }
 
-private fun User.toUserModel(): UserModel {
+internal fun User.toUserModel(): UserModel {
     return UserModel.Impl(
         username = username,
         masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
@@ -246,7 +232,7 @@ private fun User.toUserModel(): UserModel {
     )
 }
 
-private fun ItemModel.toItem(): Item {
+internal fun ItemModel.toItem(): Item {
     // TODO: Catch exception?
     return Item(
         id = id,
@@ -258,7 +244,7 @@ private fun ItemModel.toItem(): Item {
     )
 }
 
-private fun Item.toItemModel(): ItemModel {
+internal fun Item.toItemModel(): ItemModel {
     return ItemModel.Impl(
         id = id,
         userId = userId,
@@ -269,7 +255,7 @@ private fun Item.toItemModel(): ItemModel {
     )
 }
 
-private fun ItemAuthorizationModel.toItemAuthorization(): ItemAuthorization {
+internal fun ItemAuthorizationModel.toItemAuthorization(): ItemAuthorization {
     // TODO: Catch exception?
     return ItemAuthorization(
         id = id,
@@ -283,7 +269,7 @@ private fun ItemAuthorizationModel.toItemAuthorization(): ItemAuthorization {
     )
 }
 
-private fun ItemAuthorization.toItemAuthorizationModel(): ItemAuthorizationModel {
+internal fun ItemAuthorization.toItemAuthorizationModel(): ItemAuthorizationModel {
     return ItemAuthorizationModel.Impl(
         id = id,
         userId = userId,
