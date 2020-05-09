@@ -119,6 +119,7 @@ interface ItemDao {
                 items.forEach { item ->
                     val model = item.toItemModel()
                     itemQueries.update(
+                        userId = model.userId,
                         data = model.data,
                         deleted = model.deleted,
                         modified = model.modified,

@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS ItemAuthorizationModel (
     FOREIGN KEY(`itemId`) REFERENCES ItemModel(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS `index_item_authorizations_userId` ON ItemAuthorizationModel(`userId`);
-CREATE INDEX IF NOT EXISTS `index_item_authorizations_itemId` ON ItemAuthorizationModel(`itemId`);
+CREATE INDEX IF NOT EXISTS `index_ItemAuthorizationModel_userId` ON ItemAuthorizationModel(`userId`);
+CREATE INDEX IF NOT EXISTS `index_ItemAuthorizationModel_itemId` ON ItemAuthorizationModel(`itemId`);
 
 findAll:
 SELECT * FROM ItemAuthorizationModel ORDER BY `created`;
@@ -22,7 +22,7 @@ findById:
 SELECT * FROM ItemAuthorizationModel WHERE `id` = ? ORDER BY `created`;
 
 findForItem:
-SELECT * FROM ItemAuthorizationModel WHERE `itemId` = ?;
+SELECT * FROM ItemAuthorizationModel WHERE `itemId` = ? ORDER BY `created`;
 
 insert:
 INSERT OR REPLACE INTO ItemAuthorizationModel(`id`, `userId`, `itemId`, `itemKey`, `readOnly`, `deleted`, `modified`, `created`) VALUES ?;
