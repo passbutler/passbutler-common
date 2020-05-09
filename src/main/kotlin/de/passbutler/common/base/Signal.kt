@@ -21,3 +21,11 @@ class SignalEmitter {
     fun addSignal(signal: Signal) = signalObservers.add(signal)
     fun removeSignal(signal: Signal) = signalObservers.remove(signal)
 }
+
+fun SignalEmitter.addSignal(signal: Signal, notifyOnRegister: Boolean) {
+    addSignal(signal)
+
+    if (notifyOnRegister) {
+        signal.emitted()
+    }
+}
