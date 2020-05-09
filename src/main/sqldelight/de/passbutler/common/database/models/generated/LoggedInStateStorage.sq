@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS LoggedInStateStorageModel(
+    `id` INTEGER NOT NULL,
+    `username` TEXT NOT NULL,
+    `userType` TEXT NOT NULL,
+    `serverUrl` TEXT,
+    `authToken` TEXT,
+    `lastSuccessfulSyncDate` INTEGER,
+    `encryptedMasterPassword` TEXT,
+    PRIMARY KEY(`id`),
+    FOREIGN KEY(`username`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS `index_LoggedInStateStorageModel_username` ON LoggedInStateStorageModel(`username`);
+
+find:
+SELECT * FROM LoggedInStateStorageModel WHERE `id` = 1;
+
+insert:
+INSERT OR REPLACE INTO LoggedInStateStorageModel(`id`, `username`, `userType`, `serverUrl`, `authToken`, `lastSuccessfulSyncDate`, `encryptedMasterPassword`) VALUES ?;
+
+update:
+UPDATE OR REPLACE LoggedInStateStorageModel SET `username` = ?, `userType` = ?, `serverUrl` = ?, `authToken` = ?, `lastSuccessfulSyncDate` = ?, `encryptedMasterPassword` = ? WHERE `id` = 1;
+
+delete:
+DELETE FROM LoggedInStateStorageModel;

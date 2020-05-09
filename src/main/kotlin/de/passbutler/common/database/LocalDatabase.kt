@@ -1,17 +1,24 @@
 package de.passbutler.common.database
 
+import de.passbutler.common.base.toURIOrNull
+import de.passbutler.common.crypto.models.AuthToken
 import de.passbutler.common.crypto.models.CryptographicKey
+import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.ItemData
+import de.passbutler.common.database.models.LoggedInStateStorage
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
+import de.passbutler.common.database.models.UserType
 import de.passbutler.common.database.models.generated.ItemAuthorizationModel
 import de.passbutler.common.database.models.generated.ItemAuthorizationQueries
 import de.passbutler.common.database.models.generated.ItemModel
 import de.passbutler.common.database.models.generated.ItemQueries
+import de.passbutler.common.database.models.generated.LoggedInStateStorageModel
+import de.passbutler.common.database.models.generated.LoggedInStateStorageQueries
 import de.passbutler.common.database.models.generated.UserModel
 import de.passbutler.common.database.models.generated.UserQueries
 import kotlinx.coroutines.Dispatchers
@@ -23,19 +30,53 @@ const val LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE = "PRAGMA defer_foreign_k
 
 class LocalRepository(
     private val localDatabase: PassButlerDatabase
-) : UserDao by UserDao.Implementation(localDatabase.userQueries),
+) : LoggedInStateStorageDao by LoggedInStateStorageDao.Implementation(localDatabase.loggedInStateStorageQueries),
+    UserDao by UserDao.Implementation(localDatabase.userQueries),
     ItemDao by ItemDao.Implementation(localDatabase.itemQueries),
     ItemAuthorizationDao by ItemAuthorizationDao.Implementation(localDatabase.itemAuthorizationQueries) {
     suspend fun reset() {
         withContext(Dispatchers.IO) {
             // TODO: Defer foreign keys first and vacuum finally?
             localDatabase.transaction {
+                localDatabase.loggedInStateStorageQueries.delete()
                 localDatabase.itemAuthorizationQueries.deleteAll()
                 localDatabase.itemQueries.deleteAll()
                 localDatabase.userQueries.deleteAll()
             }
         }
     }
+}
+
+interface LoggedInStateStorageDao {
+    val loggedInStateStorageQueries: LoggedInStateStorageQueries
+
+    suspend fun findLoggedInStateStorage(): LoggedInStateStorage? {
+        return withContext(Dispatchers.IO) {
+            loggedInStateStorageQueries.find().executeAsOneOrNull()?.toLoggedInStateStorage()
+        }
+    }
+
+    suspend fun insertLoggedInStateStorage(loggedInStateStorage: LoggedInStateStorage) {
+        withContext(Dispatchers.IO) {
+            loggedInStateStorageQueries.insert(loggedInStateStorage.toLoggedInStateStorageModel())
+        }
+    }
+
+    suspend fun updateLoggedInStateStorage(loggedInStateStorage: LoggedInStateStorage) {
+        withContext(Dispatchers.IO) {
+            val model = loggedInStateStorage.toLoggedInStateStorageModel()
+            loggedInStateStorageQueries.update(
+                username = model.username,
+                userType = model.userType,
+                authToken = model.authToken,
+                serverUrl = model.serverUrl,
+                lastSuccessfulSyncDate = model.lastSuccessfulSyncDate,
+                encryptedMasterPassword = model.encryptedMasterPassword
+            )
+        }
+    }
+
+    class Implementation(override val loggedInStateStorageQueries: LoggedInStateStorageQueries) : LoggedInStateStorageDao
 }
 
 interface UserDao {
@@ -201,6 +242,30 @@ fun Date.toLong(): Long = this.time
 /**
  * Model type converters
  */
+
+internal fun LoggedInStateStorageModel.toLoggedInStateStorage(): LoggedInStateStorage {
+    // TODO: Catch exception?
+    return LoggedInStateStorage.Implementation(
+        username = username,
+        userType = UserType.valueOf(userType),
+        authToken = authToken?.let { AuthToken.Deserializer.deserializeOrNull(it) },
+        serverUrl = serverUrl?.toURIOrNull(),
+        lastSuccessfulSyncDate = lastSuccessfulSyncDate?.takeIf { it > 0 }?.let { Date(it) },
+        encryptedMasterPassword = encryptedMasterPassword?.let { EncryptedValue.Deserializer.deserializeOrNull(it) }
+    )
+}
+
+internal fun LoggedInStateStorage.toLoggedInStateStorageModel(): LoggedInStateStorageModel {
+    return LoggedInStateStorageModel.Impl(
+        id = 1,
+        username = username,
+        userType = userType.name,
+        authToken = authToken?.serialize()?.toString(),
+        serverUrl = serverUrl?.toString(),
+        lastSuccessfulSyncDate = lastSuccessfulSyncDate?.time,
+        encryptedMasterPassword = encryptedMasterPassword?.serialize()?.toString()
+    )
+}
 
 internal fun UserModel.toUser(): User {
     // TODO: Catch exception?
