@@ -1,3 +1,4 @@
+-- No foreign key for `username` because the logged-in state storage must be work without available user record
 CREATE TABLE IF NOT EXISTS LoggedInStateStorageModel(
     `id` INTEGER NOT NULL,
     `username` TEXT NOT NULL,
@@ -6,11 +7,8 @@ CREATE TABLE IF NOT EXISTS LoggedInStateStorageModel(
     `authToken` TEXT,
     `lastSuccessfulSyncDate` INTEGER,
     `encryptedMasterPassword` TEXT,
-    PRIMARY KEY(`id`),
-    FOREIGN KEY(`username`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE
+    PRIMARY KEY(`id`)
 );
-
-CREATE INDEX IF NOT EXISTS `index_LoggedInStateStorageModel_username` ON LoggedInStateStorageModel(`username`);
 
 find:
 SELECT * FROM LoggedInStateStorageModel WHERE `id` = 1;
