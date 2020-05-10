@@ -1,4 +1,4 @@
--- No foreign key for `username` because the logged-in state storage must be work without available user record
+-- No foreign key for `username` because the logged-in state storage must work without available user record
 CREATE TABLE IF NOT EXISTS LoggedInStateStorageModel(
     `id` INTEGER NOT NULL,
     `username` TEXT NOT NULL,
