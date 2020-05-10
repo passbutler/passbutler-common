@@ -17,7 +17,10 @@ interface Bindable<T> {
 
 class MutableBindable<T>(initialValue: T) : Bindable<T> {
 
-    private val observers = mutableSetOf<Bindable.ObserverWrapper<T>>()
+    val observers: Set<Bindable.ObserverWrapper<T>>
+        get() = _observers
+
+    private val _observers = mutableSetOf<Bindable.ObserverWrapper<T>>()
 
     override var value: T = initialValue
         set(value) {
@@ -30,7 +33,7 @@ class MutableBindable<T>(initialValue: T) : Bindable<T> {
     override fun addObserver(scope: CoroutineScope?, notifyOnRegister: Boolean, observer: BindableObserver<T>) {
         synchronized(this) {
             val observerWrapper = Bindable.ObserverWrapper(observer, scope)
-            observers.add(observerWrapper)
+            _observers.add(observerWrapper)
         }
 
         if (notifyOnRegister) {
@@ -40,7 +43,7 @@ class MutableBindable<T>(initialValue: T) : Bindable<T> {
 
     override fun removeObserver(observer: BindableObserver<T>) {
         synchronized(this) {
-            observers.removeAll { it.observer == observer }
+            _observers.removeAll { it.observer == observer }
         }
     }
 
@@ -48,7 +51,7 @@ class MutableBindable<T>(initialValue: T) : Bindable<T> {
         synchronized(this) {
             val currentValue = value
 
-            observers.forEach {
+            _observers.forEach {
                 dispatchValueChange(it.observer, it.scope, currentValue)
             }
         }
