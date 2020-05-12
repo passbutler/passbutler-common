@@ -1,5 +1,6 @@
 package de.passbutler.common.database
 
+import com.squareup.sqldelight.db.SqlDriver
 import de.passbutler.common.base.toURIOrNull
 import de.passbutler.common.crypto.models.AuthToken
 import de.passbutler.common.crypto.models.CryptographicKey
@@ -26,23 +27,36 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE = "PRAGMA foreign_keys=TRUE;"
+const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE = "PRAGMA foreign_keys=FALSE;"
 const val LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE = "PRAGMA defer_foreign_keys=TRUE;"
+const val LOCAL_DATABASE_SQL_VACUUM = "VACUUM;"
 
 class LocalRepository(
-    private val localDatabase: PassButlerDatabase
+    private val localDatabase: PassButlerDatabase,
+    private val driver: SqlDriver
 ) : LoggedInStateStorageDao by LoggedInStateStorageDao.Implementation(localDatabase.loggedInStateStorageQueries),
     UserDao by UserDao.Implementation(localDatabase.userQueries),
     ItemDao by ItemDao.Implementation(localDatabase.itemQueries),
     ItemAuthorizationDao by ItemAuthorizationDao.Implementation(localDatabase.itemAuthorizationQueries) {
     suspend fun reset() {
         withContext(Dispatchers.IO) {
-            // TODO: Defer foreign keys first and vacuum finally?
+            // Disable foreign key constraint checks before transaction as a preventative measure
+            driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE, parameters = 0)
+
             localDatabase.transaction {
-                localDatabase.loggedInStateStorageQueries.delete()
-                localDatabase.itemAuthorizationQueries.deleteAll()
-                localDatabase.itemQueries.deleteAll()
+                // For this transaction explicit ignore foreign key constraints (additionally to general foreign key constraint deactivation)
+                driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE, parameters = 0)
+
                 localDatabase.userQueries.deleteAll()
+                localDatabase.itemQueries.deleteAll()
+                localDatabase.itemAuthorizationQueries.deleteAll()
+
+                localDatabase.loggedInStateStorageQueries.delete()
             }
+
+            // Re-enable foreign key constraint checks and deallocate unused database space (vacuum) after transaction
+            driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE, parameters = 0)
+            driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_VACUUM, parameters = 0)
         }
     }
 }
