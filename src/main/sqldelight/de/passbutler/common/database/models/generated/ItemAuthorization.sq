@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS ItemAuthorizationModel (
     `modified` INTEGER NOT NULL,
     `created` INTEGER NOT NULL,
     PRIMARY KEY(`id`),
-    FOREIGN KEY(`userId`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE CASCADE,
-    FOREIGN KEY(`itemId`) REFERENCES ItemModel(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+    FOREIGN KEY(`userId`) REFERENCES UserModel(`username`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    FOREIGN KEY(`itemId`) REFERENCES ItemModel(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 CREATE INDEX IF NOT EXISTS `index_ItemAuthorizationModel_userId` ON ItemAuthorizationModel(`userId`);
