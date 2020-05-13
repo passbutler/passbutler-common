@@ -28,11 +28,5 @@ interface LoggedInStateStorage {
 
 enum class UserType {
     LOCAL,
-    REMOTE;
-
-    companion object {
-        fun valueOfOrNull(name: String): UserType? {
-            return values().find { it.name == name }
-        }
-    }
+    REMOTE
 }

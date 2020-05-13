@@ -11,13 +11,13 @@ CREATE TABLE IF NOT EXISTS LoggedInStateStorageModel(
 );
 
 find:
-SELECT * FROM LoggedInStateStorageModel WHERE `id` = 1;
+SELECT * FROM LoggedInStateStorageModel WHERE `id` = ?;
 
 insert:
 INSERT OR REPLACE INTO LoggedInStateStorageModel(`id`, `username`, `userType`, `serverUrl`, `authToken`, `lastSuccessfulSyncDate`, `encryptedMasterPassword`) VALUES ?;
 
 update:
-UPDATE OR REPLACE LoggedInStateStorageModel SET `username` = ?, `userType` = ?, `serverUrl` = ?, `authToken` = ?, `lastSuccessfulSyncDate` = ?, `encryptedMasterPassword` = ? WHERE `id` = 1;
+UPDATE OR REPLACE LoggedInStateStorageModel SET `username` = ?, `userType` = ?, `serverUrl` = ?, `authToken` = ?, `lastSuccessfulSyncDate` = ?, `encryptedMasterPassword` = ? WHERE `id` = ?;
 
 delete:
 DELETE FROM LoggedInStateStorageModel;

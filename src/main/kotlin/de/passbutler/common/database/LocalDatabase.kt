@@ -42,11 +42,11 @@ class LocalRepository(
     suspend fun reset() {
         withContext(Dispatchers.IO) {
             // Disable foreign key constraint checks before transaction as a preventative measure
-            driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE, parameters = 0)
+            driver.executeWithoutParameters(LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE)
 
             localDatabase.transaction {
                 // For this transaction explicit ignore foreign key constraints (additionally to general foreign key constraint deactivation)
-                driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE, parameters = 0)
+                driver.executeWithoutParameters(LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE)
 
                 localDatabase.userQueries.deleteAll()
                 localDatabase.itemQueries.deleteAll()
@@ -56,10 +56,14 @@ class LocalRepository(
             }
 
             // Re-enable foreign key constraint checks and deallocate unused database space (vacuum) after transaction
-            driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE, parameters = 0)
-            driver.execute(identifier = null, sql = LOCAL_DATABASE_SQL_VACUUM, parameters = 0)
+            driver.executeWithoutParameters(LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE)
+            driver.executeWithoutParameters(LOCAL_DATABASE_SQL_VACUUM)
         }
     }
+}
+
+internal fun SqlDriver.executeWithoutParameters(sql: String) {
+    execute(identifier = null, sql = sql, parameters = 0)
 }
 
 interface LoggedInStateStorageDao {
@@ -67,7 +71,7 @@ interface LoggedInStateStorageDao {
 
     suspend fun findLoggedInStateStorage(): LoggedInStateStorage? {
         return withContext(Dispatchers.IO) {
-            loggedInStateStorageQueries.find().executeAsOneOrNull()?.toLoggedInStateStorage()
+            loggedInStateStorageQueries.find(STATIC_ID).executeAsOneOrNull()?.toLoggedInStateStorage()
         }
     }
 
@@ -86,12 +90,17 @@ interface LoggedInStateStorageDao {
                 authToken = model.authToken,
                 serverUrl = model.serverUrl,
                 lastSuccessfulSyncDate = model.lastSuccessfulSyncDate,
-                encryptedMasterPassword = model.encryptedMasterPassword
+                encryptedMasterPassword = model.encryptedMasterPassword,
+                id = STATIC_ID
             )
         }
     }
 
     class Implementation(override val loggedInStateStorageQueries: LoggedInStateStorageQueries) : LoggedInStateStorageDao
+
+    companion object {
+        internal const val STATIC_ID = 1L
+    }
 }
 
 interface UserDao {
@@ -276,7 +285,7 @@ internal fun LoggedInStateStorageModel.toLoggedInStateStorage(): LoggedInStateSt
 
 internal fun LoggedInStateStorage.toLoggedInStateStorageModel(): LoggedInStateStorageModel {
     return LoggedInStateStorageModel.Impl(
-        id = 1,
+        id = LoggedInStateStorageDao.STATIC_ID,
         username = username,
         userType = userType.name,
         authToken = authToken?.serialize()?.toString(),
