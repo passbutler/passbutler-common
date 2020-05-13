@@ -1,6 +1,7 @@
 package de.passbutler.common
 
 import com.squareup.sqldelight.Query
+import de.passbutler.common.base.BuildInformationProviding
 import de.passbutler.common.database.AuthWebservice
 import de.passbutler.common.database.UserWebservice
 import de.passbutler.common.database.requestWithResult
@@ -38,7 +39,7 @@ import java.net.SocketTimeoutException
 import java.net.URI
 import java.util.*
 
-class UserManager(val localRepository: LocalRepository) {
+class UserManager(val localRepository: LocalRepository, val buildInformationProvider: BuildInformationProviding) {
 
     val loggedInStateStorage = MutableBindable<LoggedInStateStorage?>(null)
     val loggedInUserResult = MutableBindable<LoggedInUserResult?>(null)
@@ -67,7 +68,7 @@ class UserManager(val localRepository: LocalRepository) {
             localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
             loggedInStateStorage.value = createdLoggedInStateStorage
 
-            val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
+            val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword, buildInformationProvider)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
             webservices.value = Webservices(createdAuthWebservice, createdUserWebservice)
@@ -148,7 +149,7 @@ class UserManager(val localRepository: LocalRepository) {
             val loggedInUser = findLoggedInUser() ?: throw LoggedInUserUninitializedException
 
             val username = loggedInUser.username
-            val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
+            val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword, buildInformationProvider)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
             createdUserWebservice.requestWithoutResult { registerUser(loggedInUser) }.resultOrThrowException()
@@ -195,7 +196,7 @@ class UserManager(val localRepository: LocalRepository) {
             val username = loggedInStateStorage.value?.username ?: throw IllegalStateException("The username is null!")
 
             webservices.value = webservices.value ?: run {
-                val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword)
+                val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword, buildInformationProvider)
                 val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
                 Webservices(createdAuthWebservice, createdUserWebservice)
             }
@@ -336,14 +337,14 @@ private suspend fun createUserSettings(masterEncryptionKey: ByteArray): Protecte
 }
 
 @Throws(Exception::class)
-private suspend fun createAuthWebservice(serverUrl: URI, username: String, masterPassword: String): AuthWebservice {
+private suspend fun createAuthWebservice(serverUrl: URI, username: String, masterPassword: String, buildInformationProvider: BuildInformationProviding): AuthWebservice {
     val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-    val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash)
+    val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash, buildInformationProvider)
     return authWebservice
 }
 
 private suspend fun createUserWebservice(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
-    val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager)
+    val userWebservice = UserWebservice.create(serverUrl, authWebservice, userManager, userManager.buildInformationProvider)
     return userWebservice
 }
 

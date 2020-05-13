@@ -1,7 +1,8 @@
 package de.passbutler.common.database
 
-import de.passbutler.app.base.BuildType
 import de.passbutler.common.UserManager
+import de.passbutler.common.base.BuildInformationProviding
+import de.passbutler.common.base.BuildType
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.Result
 import de.passbutler.common.base.Success
@@ -86,8 +87,8 @@ interface AuthWebservice {
 
     companion object {
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: URI, username: String, password: String): AuthWebservice {
-            require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
+        suspend fun create(serverUrl: URI, username: String, password: String, buildInformationProvider: BuildInformationProviding): AuthWebservice {
+            require(!(buildInformationProvider.buildType == BuildType.Release && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {
                 val okHttpClient = OkHttpClient.Builder()
@@ -273,8 +274,8 @@ interface UserWebservice {
         private val MEDIA_TYPE_JSON = "application/json".toMediaType()
 
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager): UserWebservice {
-            require(!(BuildType.isReleaseBuild && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
+        suspend fun create(serverUrl: URI, authWebservice: AuthWebservice, userManager: UserManager, buildInformationProvider: BuildInformationProviding): UserWebservice {
+            require(!(buildInformationProvider.buildType == BuildType.Release && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {
                 val okHttpClient = OkHttpClient.Builder()
