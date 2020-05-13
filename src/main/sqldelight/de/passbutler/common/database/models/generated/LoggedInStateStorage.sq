@@ -1,0 +1,23 @@
+-- No foreign key for `username` because the logged-in state storage must work without available user record
+CREATE TABLE IF NOT EXISTS LoggedInStateStorageModel(
+    `id` INTEGER NOT NULL,
+    `username` TEXT NOT NULL,
+    `userType` TEXT NOT NULL,
+    `serverUrl` TEXT,
+    `authToken` TEXT,
+    `lastSuccessfulSyncDate` INTEGER,
+    `encryptedMasterPassword` TEXT,
+    PRIMARY KEY(`id`)
+);
+
+find:
+SELECT * FROM LoggedInStateStorageModel WHERE `id` = ?;
+
+insert:
+INSERT OR REPLACE INTO LoggedInStateStorageModel(`id`, `username`, `userType`, `serverUrl`, `authToken`, `lastSuccessfulSyncDate`, `encryptedMasterPassword`) VALUES ?;
+
+update:
+UPDATE OR REPLACE LoggedInStateStorageModel SET `username` = ?, `userType` = ?, `serverUrl` = ?, `authToken` = ?, `lastSuccessfulSyncDate` = ?, `encryptedMasterPassword` = ? WHERE `id` = ?;
+
+delete:
+DELETE FROM LoggedInStateStorageModel;

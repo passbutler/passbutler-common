@@ -1,40 +1,105 @@
 package de.passbutler.common.database
 
+import com.squareup.sqldelight.db.SqlDriver
+import de.passbutler.common.base.toURI
+import de.passbutler.common.crypto.models.AuthToken
 import de.passbutler.common.crypto.models.CryptographicKey
+import de.passbutler.common.crypto.models.EncryptedValue
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.ItemData
+import de.passbutler.common.database.models.LoggedInStateStorage
 import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
+import de.passbutler.common.database.models.UserType
 import de.passbutler.common.database.models.generated.ItemAuthorizationModel
 import de.passbutler.common.database.models.generated.ItemAuthorizationQueries
 import de.passbutler.common.database.models.generated.ItemModel
 import de.passbutler.common.database.models.generated.ItemQueries
+import de.passbutler.common.database.models.generated.LoggedInStateStorageModel
+import de.passbutler.common.database.models.generated.LoggedInStateStorageQueries
 import de.passbutler.common.database.models.generated.UserModel
 import de.passbutler.common.database.models.generated.UserQueries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.tinylog.Logger
 import java.util.*
 
 const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE = "PRAGMA foreign_keys=TRUE;"
+const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE = "PRAGMA foreign_keys=FALSE;"
 const val LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE = "PRAGMA defer_foreign_keys=TRUE;"
+const val LOCAL_DATABASE_SQL_VACUUM = "VACUUM;"
 
 class LocalRepository(
-    private val localDatabase: PassButlerDatabase
-) : UserDao by UserDao.Implementation(localDatabase.userQueries),
+    private val localDatabase: PassButlerDatabase,
+    private val driver: SqlDriver
+) : LoggedInStateStorageDao by LoggedInStateStorageDao.Implementation(localDatabase.loggedInStateStorageQueries),
+    UserDao by UserDao.Implementation(localDatabase.userQueries),
     ItemDao by ItemDao.Implementation(localDatabase.itemQueries),
     ItemAuthorizationDao by ItemAuthorizationDao.Implementation(localDatabase.itemAuthorizationQueries) {
     suspend fun reset() {
         withContext(Dispatchers.IO) {
-            // TODO: Defer foreign keys first and vacuum finally?
+            // Disable foreign key constraint checks before transaction as a preventative measure
+            driver.executeWithoutParameters(LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE)
+
             localDatabase.transaction {
-                localDatabase.itemAuthorizationQueries.deleteAll()
-                localDatabase.itemQueries.deleteAll()
+                // For this transaction explicit ignore foreign key constraints (additionally to general foreign key constraint deactivation)
+                driver.executeWithoutParameters(LOCAL_DATABASE_SQL_DEFER_FOREIGN_KEYS_ENABLE)
+
                 localDatabase.userQueries.deleteAll()
+                localDatabase.itemQueries.deleteAll()
+                localDatabase.itemAuthorizationQueries.deleteAll()
+
+                localDatabase.loggedInStateStorageQueries.delete()
             }
+
+            // Re-enable foreign key constraint checks and deallocate unused database space (vacuum) after transaction
+            driver.executeWithoutParameters(LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE)
+            driver.executeWithoutParameters(LOCAL_DATABASE_SQL_VACUUM)
         }
+    }
+}
+
+internal fun SqlDriver.executeWithoutParameters(sql: String) {
+    execute(identifier = null, sql = sql, parameters = 0)
+}
+
+interface LoggedInStateStorageDao {
+    val loggedInStateStorageQueries: LoggedInStateStorageQueries
+
+    suspend fun findLoggedInStateStorage(): LoggedInStateStorage? {
+        return withContext(Dispatchers.IO) {
+            loggedInStateStorageQueries.find(STATIC_ID).executeAsOneOrNull()?.toLoggedInStateStorage()
+        }
+    }
+
+    suspend fun insertLoggedInStateStorage(loggedInStateStorage: LoggedInStateStorage) {
+        withContext(Dispatchers.IO) {
+            loggedInStateStorageQueries.insert(loggedInStateStorage.toLoggedInStateStorageModel())
+        }
+    }
+
+    suspend fun updateLoggedInStateStorage(loggedInStateStorage: LoggedInStateStorage) {
+        withContext(Dispatchers.IO) {
+            val model = loggedInStateStorage.toLoggedInStateStorageModel()
+            loggedInStateStorageQueries.update(
+                username = model.username,
+                userType = model.userType,
+                authToken = model.authToken,
+                serverUrl = model.serverUrl,
+                lastSuccessfulSyncDate = model.lastSuccessfulSyncDate,
+                encryptedMasterPassword = model.encryptedMasterPassword,
+                id = STATIC_ID
+            )
+        }
+    }
+
+    class Implementation(override val loggedInStateStorageQueries: LoggedInStateStorageQueries) : LoggedInStateStorageDao
+
+    companion object {
+        internal const val STATIC_ID = 1L
     }
 }
 
@@ -43,7 +108,7 @@ interface UserDao {
 
     suspend fun findAllUsers(): List<User> {
         return withContext(Dispatchers.IO) {
-            userQueries.findAll().executeAsList().map { it.toUser() }
+            userQueries.findAll().executeAsList().mapNotNull { it.toUser() }
         }
     }
 
@@ -93,7 +158,7 @@ interface ItemDao {
 
     suspend fun findAllItems(): List<Item> {
         return withContext(Dispatchers.IO) {
-            itemQueries.findAll().executeAsList().map { it.toItem() }
+            itemQueries.findAll().executeAsList().mapNotNull { it.toItem() }
         }
     }
 
@@ -139,7 +204,7 @@ interface ItemAuthorizationDao {
 
     suspend fun findAllItemAuthorizations(): List<ItemAuthorization> {
         return withContext(Dispatchers.IO) {
-            itemAuthorizationQueries.findAll().executeAsList().map { it.toItemAuthorization() }
+            itemAuthorizationQueries.findAll().executeAsList().mapNotNull { it.toItemAuthorization() }
         }
     }
 
@@ -151,7 +216,7 @@ interface ItemAuthorizationDao {
 
     suspend fun findItemAuthorizationForItem(item: Item): List<ItemAuthorization> {
         return withContext(Dispatchers.IO) {
-            itemAuthorizationQueries.findForItem(item.id).executeAsList().map { it.toItemAuthorization() }
+            itemAuthorizationQueries.findForItem(item.id).executeAsList().mapNotNull { it.toItemAuthorization() }
         }
     }
 
@@ -202,20 +267,52 @@ fun Date.toLong(): Long = this.time
  * Model type converters
  */
 
-internal fun UserModel.toUser(): User {
-    // TODO: Catch exception?
-    return User(
+internal fun LoggedInStateStorageModel.toLoggedInStateStorage(): LoggedInStateStorage? {
+    return try {
+        LoggedInStateStorage.Implementation(
+            username = username,
+            userType = UserType.valueOf(userType),
+            authToken = authToken?.let { AuthToken.Deserializer.deserialize(it) },
+            serverUrl = serverUrl?.toURI(),
+            lastSuccessfulSyncDate = lastSuccessfulSyncDate?.takeIf { it > 0 }?.let { Date(it) },
+            encryptedMasterPassword = encryptedMasterPassword?.let { EncryptedValue.Deserializer.deserialize(it) }
+        )
+    } catch (exception: Exception) {
+        Logger.warn(exception, "The LoggedInStateStorageModel could not be converted!")
+        null
+    }
+}
+
+internal fun LoggedInStateStorage.toLoggedInStateStorageModel(): LoggedInStateStorageModel {
+    return LoggedInStateStorageModel.Impl(
+        id = LoggedInStateStorageDao.STATIC_ID,
         username = username,
-        masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
-        masterKeyDerivationInformation = masterKeyDerivationInformation?.let { KeyDerivationInformation.Deserializer.deserialize(it) },
-        masterEncryptionKey = masterEncryptionKey?.let { ProtectedValue.Deserializer<CryptographicKey>().deserialize(it) },
-        itemEncryptionPublicKey = CryptographicKey.Deserializer.deserialize(itemEncryptionPublicKey),
-        itemEncryptionSecretKey = itemEncryptionSecretKey?.let { ProtectedValue.Deserializer<CryptographicKey>().deserialize(it) },
-        settings = settings?.let { ProtectedValue.Deserializer<UserSettings>().deserialize(it) },
-        deleted = deleted.toBoolean(),
-        modified = modified.toDate(),
-        created = created.toDate()
+        userType = userType.name,
+        authToken = authToken?.serialize()?.toString(),
+        serverUrl = serverUrl?.toString(),
+        lastSuccessfulSyncDate = lastSuccessfulSyncDate?.time,
+        encryptedMasterPassword = encryptedMasterPassword?.serialize()?.toString()
     )
+}
+
+internal fun UserModel.toUser(): User? {
+    return try {
+        User(
+            username = username,
+            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
+            masterKeyDerivationInformation = masterKeyDerivationInformation?.let { KeyDerivationInformation.Deserializer.deserialize(it) },
+            masterEncryptionKey = masterEncryptionKey?.let { ProtectedValue.Deserializer<CryptographicKey>().deserialize(it) },
+            itemEncryptionPublicKey = CryptographicKey.Deserializer.deserialize(itemEncryptionPublicKey),
+            itemEncryptionSecretKey = itemEncryptionSecretKey?.let { ProtectedValue.Deserializer<CryptographicKey>().deserialize(it) },
+            settings = settings?.let { ProtectedValue.Deserializer<UserSettings>().deserialize(it) },
+            deleted = deleted.toBoolean(),
+            modified = modified.toDate(),
+            created = created.toDate()
+        )
+    } catch (exception: Exception) {
+        Logger.warn(exception, "The UserModel could not be converted!")
+        null
+    }
 }
 
 internal fun User.toUserModel(): UserModel {
@@ -233,16 +330,20 @@ internal fun User.toUserModel(): UserModel {
     )
 }
 
-internal fun ItemModel.toItem(): Item {
-    // TODO: Catch exception?
-    return Item(
-        id = id,
-        userId = userId,
-        data = ProtectedValue.Deserializer<ItemData>().deserialize(data),
-        deleted = deleted.toBoolean(),
-        modified = modified.toDate(),
-        created = created.toDate()
-    )
+internal fun ItemModel.toItem(): Item? {
+    return try {
+        Item(
+            id = id,
+            userId = userId,
+            data = ProtectedValue.Deserializer<ItemData>().deserialize(data),
+            deleted = deleted.toBoolean(),
+            modified = modified.toDate(),
+            created = created.toDate()
+        )
+    } catch (exception: Exception) {
+        Logger.warn(exception, "The ItemModel could not be converted!")
+        null
+    }
 }
 
 internal fun Item.toItemModel(): ItemModel {
@@ -256,18 +357,22 @@ internal fun Item.toItemModel(): ItemModel {
     )
 }
 
-internal fun ItemAuthorizationModel.toItemAuthorization(): ItemAuthorization {
-    // TODO: Catch exception?
-    return ItemAuthorization(
-        id = id,
-        userId = userId,
-        itemId = itemId,
-        itemKey = ProtectedValue.Deserializer<CryptographicKey>().deserialize(itemKey),
-        readOnly = readOnly.toBoolean(),
-        deleted = deleted.toBoolean(),
-        modified = modified.toDate(),
-        created = created.toDate()
-    )
+internal fun ItemAuthorizationModel.toItemAuthorization(): ItemAuthorization? {
+    return try {
+        ItemAuthorization(
+            id = id,
+            userId = userId,
+            itemId = itemId,
+            itemKey = ProtectedValue.Deserializer<CryptographicKey>().deserialize(itemKey),
+            readOnly = readOnly.toBoolean(),
+            deleted = deleted.toBoolean(),
+            modified = modified.toDate(),
+            created = created.toDate()
+        )
+    } catch (exception: Exception) {
+        Logger.warn(exception, "The ItemAuthorizationModel could not be converted!")
+        null
+    }
 }
 
 internal fun ItemAuthorization.toItemAuthorizationModel(): ItemAuthorizationModel {
