@@ -62,13 +62,19 @@ data class Item(
 
 data class ItemData(
     val title: String,
-    val password: String
+    val username: String,
+    val password: String,
+    val url: String,
+    val notes: String
 ) : JSONSerializable {
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_TITLE, title)
+            putString(SERIALIZATION_KEY_USERNAME, username)
             putString(SERIALIZATION_KEY_PASSWORD, password)
+            putString(SERIALIZATION_KEY_URL, url)
+            putString(SERIALIZATION_KEY_NOTES, notes)
         }
     }
 
@@ -77,13 +83,19 @@ data class ItemData(
         override fun deserialize(jsonObject: JSONObject): ItemData {
             return ItemData(
                 title = jsonObject.getString(SERIALIZATION_KEY_TITLE),
-                password = jsonObject.getString(SERIALIZATION_KEY_PASSWORD)
+                username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                password = jsonObject.getString(SERIALIZATION_KEY_PASSWORD),
+                url = jsonObject.getString(SERIALIZATION_KEY_URL),
+                notes = jsonObject.getString(SERIALIZATION_KEY_NOTES)
             )
         }
     }
 
     companion object {
         private const val SERIALIZATION_KEY_TITLE = "title"
+        private const val SERIALIZATION_KEY_USERNAME = "username"
         private const val SERIALIZATION_KEY_PASSWORD = "password"
+        private const val SERIALIZATION_KEY_URL = "url"
+        private const val SERIALIZATION_KEY_NOTES = "notes"
     }
 }

@@ -47,7 +47,10 @@ class ItemDataTest {
         private fun createExampleItemData(): ItemData {
             return ItemData(
                 title = "exampleTitle",
-                password = "examplePassword"
+                username = "exampleUsername",
+                password = "examplePassword",
+                url = "exampleUrl",
+                notes = "exampleNotes"
             )
         }
 
@@ -56,7 +59,10 @@ class ItemDataTest {
                 """
                 {
                   "title": "exampleTitle",
-                  "password": "examplePassword"
+                  "username": "exampleUsername",
+                  "password": "examplePassword",
+                  "url": "exampleUrl",
+                  "notes": "exampleNotes"
                 }
                 """.trimIndent()
             )
