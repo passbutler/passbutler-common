@@ -15,7 +15,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
-// TODO: Fix item available foreign key problem when syncing
 data class ItemAuthorization(
     val id: String,
     val userId: String,
