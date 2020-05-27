@@ -3,10 +3,6 @@ package de.passbutler.common
 import com.squareup.sqldelight.Query
 import de.passbutler.common.base.Bindable
 import de.passbutler.common.base.BuildInformationProviding
-import de.passbutler.common.database.AuthWebservice
-import de.passbutler.common.database.UserWebservice
-import de.passbutler.common.database.requestWithResult
-import de.passbutler.common.database.requestWithoutResult
 import de.passbutler.common.base.Failure
 import de.passbutler.common.base.MutableBindable
 import de.passbutler.common.base.Result
@@ -23,9 +19,11 @@ import de.passbutler.common.crypto.RandomGenerator
 import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
+import de.passbutler.common.database.AuthWebservice
 import de.passbutler.common.database.Differentiation
 import de.passbutler.common.database.LocalRepository
 import de.passbutler.common.database.SynchronizationTask
+import de.passbutler.common.database.UserWebservice
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.LoggedInStateStorage
@@ -33,6 +31,8 @@ import de.passbutler.common.database.models.User
 import de.passbutler.common.database.models.UserSettings
 import de.passbutler.common.database.models.UserType
 import de.passbutler.common.database.remoteChangedItems
+import de.passbutler.common.database.requestWithResult
+import de.passbutler.common.database.requestWithoutResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.tinylog.kotlin.Logger
@@ -110,6 +110,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             localRepository.insertLoggedInStateStorage(createdLoggedInStateStorage)
             _loggedInStateStorage.value = createdLoggedInStateStorage
 
+            val newUserId = UUID.randomUUID().toString()
             val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
 
@@ -124,6 +125,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             val currentDate = Date()
 
             val newUser = User(
+                newUserId,
                 username,
                 serverMasterPasswordAuthenticationHash,
                 masterKeyDerivationInformation,
@@ -184,7 +186,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
 
             val restoredLoggedInStateStorage = localRepository.findLoggedInStateStorage()
             val restoredLoggedInUser = restoredLoggedInStateStorage?.username?.let { loggedInUsername ->
-                localRepository.findUser(loggedInUsername)
+                localRepository.findUserByUsername(loggedInUsername)
             }
 
             if (restoredLoggedInUser != null) {
@@ -276,8 +278,8 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         return listOf(
             UsersSynchronizationTask(localRepository, userWebservice, loggedInUser),
             UserDetailsSynchronizationTask(localRepository, userWebservice, loggedInUser),
-            ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.username),
-            ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.username)
+            ItemsSynchronizationTask(localRepository, userWebservice, loggedInUser.id),
+            ItemAuthorizationsSynchronizationTask(localRepository, userWebservice, loggedInUser.id)
         )
     }
 
@@ -299,8 +301,8 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
     }
 
     private suspend fun findLoggedInUser(): User? {
-        return (loggedInUserResult.value as? LoggedInUserResult.LoggedIn)?.loggedInUser?.username?.let { loggedInUsername ->
-            localRepository.findUser(loggedInUsername)
+        return (loggedInUserResult.value as? LoggedInUserResult.LoggedIn)?.loggedInUser?.id?.let { loggedInUserId ->
+            localRepository.findUserById(loggedInUserId)
         }
     }
 
@@ -387,8 +389,8 @@ private class UsersSynchronizationTask(
                 }
 
                 // Only update the other users, not the logged-in user
-                val localUsers = localUsersDeferred.await().excludeLoggedInUsername()
-                val remoteUsers = remoteUsersDeferred.await().excludeLoggedInUsername()
+                val localUsers = localUsersDeferred.await().excludeLoggedInUser()
+                val remoteUsers = remoteUsersDeferred.await().excludeLoggedInUser()
                 val differentiationResult = Differentiation.collectChanges(localUsers, remoteUsers)
 
                 // Update local database
@@ -402,9 +404,9 @@ private class UsersSynchronizationTask(
         }
     }
 
-    private fun List<User>.excludeLoggedInUsername(): List<User> {
-        val loggedInUsername = loggedInUser.username
-        return filterNot { it.username == loggedInUsername }
+    private fun List<User>.excludeLoggedInUser(): List<User> {
+        val loggedInUserId = loggedInUser.id
+        return filterNot { it.id == loggedInUserId }
     }
 }
 
@@ -445,7 +447,7 @@ private class UserDetailsSynchronizationTask(
 private class ItemsSynchronizationTask(
     private val localRepository: LocalRepository,
     private var userWebservice: UserWebservice,
-    private val loggedInUserName: String
+    private val loggedInUserId: String
 ) : SynchronizationTask {
     override suspend fun synchronize(): Result<Differentiation.Result<Item>> {
         return try {
@@ -463,7 +465,7 @@ private class ItemsSynchronizationTask(
 
                 val remoteChangedItems = differentiationResult.remoteChangedItems.filter { item ->
                     // Only update items where the user has a non-deleted, non-readonly item authorization
-                    localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserName && !it.readOnly && !it.deleted }
+                    localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserId && !it.readOnly && !it.deleted }
                 }
 
                 // Update remote webservice if necessary
@@ -482,7 +484,7 @@ private class ItemsSynchronizationTask(
 private class ItemAuthorizationsSynchronizationTask(
     private val localRepository: LocalRepository,
     private var userWebservice: UserWebservice,
-    private val loggedInUserName: String
+    private val loggedInUserId: String
 ) : SynchronizationTask {
     override suspend fun synchronize(): Result<Differentiation.Result<ItemAuthorization>> {
         return try {
@@ -499,8 +501,8 @@ private class ItemAuthorizationsSynchronizationTask(
                 localRepository.updateItemAuthorization(*differentiationResult.modifiedItemsForLocal.toTypedArray())
 
                 val remoteChangedItemAuthorizations = differentiationResult.remoteChangedItems.filter { itemAuthorization ->
-                    // Only update item authorizations where the user is the creator of the item
-                    localRepository.findItem(itemAuthorization.itemId)?.userId == loggedInUserName
+                    // Only update item authorizations where the user is the owner of the item
+                    localRepository.findItem(itemAuthorization.itemId)?.userId == loggedInUserId
                 }
 
                 // Update remote webservice if necessary

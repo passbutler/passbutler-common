@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS UserModel (
+    `id` TEXT NOT NULL,
     `username` TEXT NOT NULL,
     `masterPasswordAuthenticationHash` TEXT,
     `masterKeyDerivationInformation` TEXT,
@@ -9,20 +10,24 @@ CREATE TABLE IF NOT EXISTS UserModel (
     `deleted` INTEGER NOT NULL,
     `modified` INTEGER NOT NULL,
     `created` INTEGER NOT NULL,
-    PRIMARY KEY(`username`)
+    PRIMARY KEY(`id`),
+    UNIQUE(`username`)
 );
 
 findAll:
 SELECT * FROM UserModel ORDER BY `created`;
 
 findById:
+SELECT * FROM UserModel WHERE `id` = ? ORDER BY `created`;
+
+findByUsername:
 SELECT * FROM UserModel WHERE `username` = ? ORDER BY `created`;
 
 insert:
-INSERT OR REPLACE INTO UserModel(`username`, `masterPasswordAuthenticationHash`, `masterKeyDerivationInformation`, `masterEncryptionKey`, `itemEncryptionPublicKey`, `itemEncryptionSecretKey`, `settings`, `deleted`, `modified`, `created`) VALUES ?;
+INSERT OR REPLACE INTO UserModel(`id`, `username`, `masterPasswordAuthenticationHash`, `masterKeyDerivationInformation`, `masterEncryptionKey`, `itemEncryptionPublicKey`, `itemEncryptionSecretKey`, `settings`, `deleted`, `modified`, `created`) VALUES ?;
 
 update:
-UPDATE OR REPLACE UserModel SET `masterPasswordAuthenticationHash` = ?, `masterKeyDerivationInformation` = ?, `masterEncryptionKey` = ?, `itemEncryptionPublicKey` = ?, `itemEncryptionSecretKey` = ?, `settings` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `username` = ?;
+UPDATE OR REPLACE UserModel SET `username` = ?, `masterPasswordAuthenticationHash` = ?, `masterKeyDerivationInformation` = ?, `masterEncryptionKey` = ?, `itemEncryptionPublicKey` = ?, `itemEncryptionSecretKey` = ?, `settings` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;
 
 deleteAll:
 DELETE FROM UserModel;

@@ -112,9 +112,15 @@ interface UserDao {
         }
     }
 
-    suspend fun findUser(username: String): User? {
+    suspend fun findUserById(id: String): User? {
         return withContext(Dispatchers.IO) {
-            userQueries.findById(username).executeAsOneOrNull()?.toUser()
+            userQueries.findById(id).executeAsOneOrNull()?.toUser()
+        }
+    }
+
+    suspend fun findUserByUsername(username: String): User? {
+        return withContext(Dispatchers.IO) {
+            userQueries.findByUsername(username).executeAsOneOrNull()?.toUser()
         }
     }
 
@@ -134,6 +140,7 @@ interface UserDao {
                 users.forEach { user ->
                     val model = user.toUserModel()
                     userQueries.update(
+                        username = model.username,
                         masterPasswordAuthenticationHash = model.masterPasswordAuthenticationHash,
                         masterKeyDerivationInformation = model.masterKeyDerivationInformation,
                         masterEncryptionKey = model.masterEncryptionKey,
@@ -143,7 +150,7 @@ interface UserDao {
                         deleted = model.deleted,
                         modified = model.modified,
                         created = model.created,
-                        username = model.username
+                        id = model.id
                     )
                 }
             }
@@ -298,6 +305,7 @@ internal fun LoggedInStateStorage.toLoggedInStateStorageModel(): LoggedInStateSt
 internal fun UserModel.toUser(): User? {
     return try {
         User(
+            id = id,
             username = username,
             masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation?.let { KeyDerivationInformation.Deserializer.deserialize(it) },
@@ -317,6 +325,7 @@ internal fun UserModel.toUser(): User? {
 
 internal fun User.toUserModel(): UserModel {
     return UserModel.Impl(
+        id = id,
         username = username,
         masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
         masterKeyDerivationInformation = masterKeyDerivationInformation?.serialize()?.toString(),
