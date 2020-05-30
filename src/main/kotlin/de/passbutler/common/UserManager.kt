@@ -181,7 +181,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
     }
 
     suspend fun restoreLoggedInUser() {
-        if (loggedInUserResult.value == null) {
+        if (_loggedInUserResult.value == null) {
             Logger.debug("Try to restore logged-in user")
 
             val restoredLoggedInStateStorage = localRepository.findLoggedInStateStorage()
@@ -301,7 +301,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
     }
 
     private suspend fun findLoggedInUser(): User? {
-        return (loggedInUserResult.value as? LoggedInUserResult.LoggedIn)?.loggedInUser?.id?.let { loggedInUserId ->
+        return (_loggedInUserResult.value as? LoggedInUserResult.LoggedIn)?.loggedInUser?.id?.let { loggedInUserId ->
             localRepository.findUserById(loggedInUserId)
         }
     }
