@@ -23,6 +23,7 @@ import org.json.JSONObject
 import java.util.*
 
 data class User(
+    val id: String,
     val username: String,
     val masterPasswordAuthenticationHash: String?,
     val masterKeyDerivationInformation: KeyDerivationInformation?,
@@ -35,10 +36,11 @@ data class User(
     override val created: Date
 ) : Synchronizable, JSONSerializable {
 
-    override val primaryField = username
+    override val primaryField = id
 
     override fun serialize(): JSONObject {
         return JSONObject().apply {
+            putString(SERIALIZATION_KEY_ID, id)
             putString(SERIALIZATION_KEY_USERNAME, username)
             putString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH, masterPasswordAuthenticationHash)
             putJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation)
@@ -59,6 +61,7 @@ data class User(
         @Throws(JSONException::class)
         override fun deserialize(jsonObject: JSONObject): User {
             return User(
+                id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
                 masterPasswordAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
@@ -80,6 +83,7 @@ data class User(
         @Throws(JSONException::class)
         override fun deserialize(jsonObject: JSONObject): User {
             return User(
+                id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
                 masterPasswordAuthenticationHash = jsonObject.getStringOrNull(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
@@ -95,6 +99,7 @@ data class User(
     }
 
     companion object {
+        private const val SERIALIZATION_KEY_ID = "id"
         private const val SERIALIZATION_KEY_USERNAME = "username"
         private const val SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH = "masterPasswordAuthenticationHash"
         private const val SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION = "masterKeyDerivationInformation"
