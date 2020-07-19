@@ -170,8 +170,8 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
 
             // If everything worked, update logged-in state storage
             updateLoggedInStateStorage {
-                this.userType = UserType.REMOTE
-                this.serverUrl = serverUrl
+                it.userType = UserType.REMOTE
+                it.serverUrl = serverUrl
             }
 
             Success(Unit)
@@ -225,7 +225,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         restoreWebservices(masterPassword)
     }
 
-    suspend fun updateLoggedInStateStorage(block: LoggedInStateStorage.() -> Unit) {
+    suspend fun updateLoggedInStateStorage(block: (LoggedInStateStorage) -> Unit) {
         val updatedLoggedInStateStorage = (loggedInStateStorage.value as? LoggedInStateStorage.Implementation)?.copy() ?: throw LoggedInStateStorageUninitializedException
         block.invoke(updatedLoggedInStateStorage)
 
@@ -288,7 +288,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             Failure(firstFailedTask.throwable)
         } else {
             updateLoggedInStateStorage {
-                lastSuccessfulSyncDate = Date()
+                it.lastSuccessfulSyncDate = Date()
             }
 
             Success(Unit)

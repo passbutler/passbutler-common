@@ -145,7 +145,7 @@ interface UserWebservice {
             set(value) {
                 runBlocking {
                     userManager.updateLoggedInStateStorage {
-                        authToken = value
+                        it.authToken = value
                     }
                 }
             }
