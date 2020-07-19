@@ -234,6 +234,27 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         _loggedInStateStorage.value = updatedLoggedInStateStorage
     }
 
+    suspend fun updateUser(updatedUser: User): Result<Unit> {
+        Logger.debug("Update user")
+
+        val loggedInStateStorage = loggedInStateStorage.value ?: throw LoggedInStateStorageUninitializedException
+
+        return try {
+            // First update on remote (in case of remote user) to be sure the new authentication hash is updated
+            if (loggedInStateStorage.userType == UserType.REMOTE) {
+                val userWebservice = webservices.value?.userWebservice ?: throw UserWebserviceUninitializedException
+                userWebservice.requestWithoutResult { setUserDetails(updatedUser) }.resultOrThrowException()
+            }
+
+            // Then update in locale database
+            localRepository.updateUser(updatedUser)
+
+            Success(Unit)
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+
     suspend fun synchronize(): Result<Unit> {
         Logger.debug("Synchronize")
 
