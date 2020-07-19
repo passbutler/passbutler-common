@@ -129,6 +129,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     class Deserializer<T : JSONSerializable> : JSONSerializableDeserializer<ProtectedValue<T>>() {
         @Throws(JSONException::class)
         override fun deserialize(jsonObject: JSONObject): ProtectedValue<T> {
+            // Ignore "SyntheticAccessor", because the constructor must be private to avoid misuse
             return ProtectedValue(
                 jsonObject.getByteArray(SERIALIZATION_KEY_INITIALIZATION_VECTOR),
                 jsonObject.getByteArray(SERIALIZATION_KEY_ENCRYPTED_VALUE),
@@ -173,7 +174,7 @@ class ProtectedValue<T : JSONSerializable> private constructor(
 /**
  * Converts a `JSONSerializable` to a `ByteArray`.
  */
-private fun <T : JSONSerializable> T.toByteArray(): ByteArray {
+fun <T : JSONSerializable> T.toByteArray(): ByteArray {
     val valueAsJsonSerializedString = this.serialize().toString()
     return valueAsJsonSerializedString.toByteArray(Charsets.UTF_8)
 }
