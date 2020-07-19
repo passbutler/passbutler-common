@@ -220,7 +220,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         }
     }
 
-    suspend fun reinitializeAuthWebservice(masterPassword: String) {
+    suspend fun reinitializeWebservices(masterPassword: String) {
         _webservices.value = null
         restoreWebservices(masterPassword)
     }
