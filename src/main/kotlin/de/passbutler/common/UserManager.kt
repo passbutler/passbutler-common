@@ -275,7 +275,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
     }
 
     private suspend fun createSynchronizationTasks(): List<SynchronizationTask> {
-        val userWebservice = webservices.value?.userWebservice ?: throw IllegalStateException("The user webservice is not initialized!")
+        val userWebservice = webservices.value?.userWebservice ?: throw UserWebserviceUninitializedException
         val loggedInUser = findLoggedInUser() ?: throw LoggedInUserUninitializedException
 
         return listOf(
@@ -523,4 +523,4 @@ private class ItemAuthorizationsSynchronizationTask(
 
 object LoggedInStateStorageUninitializedException : IllegalStateException("Access of uninitialized LoggedInStateStorage!")
 object LoggedInUserUninitializedException : IllegalStateException("The logged-in user is not initialized!")
-object UserManagerUninitializedException : IllegalStateException("The UserManager is not initialized!")
+object UserWebserviceUninitializedException : IllegalStateException("The user webservice is not initialized!")
