@@ -147,19 +147,19 @@ class ProtectedValueTest {
         val unusedEncryptionKey = createNonClearedEncryptionKey()
         val updatedJSONSerializable = TestJSONSerializable("testValue")
 
-        runBlocking {
+        val updatedProtectedValue = runBlocking {
             protectedValue.update(unusedEncryptionKey, updatedJSONSerializable).resultOrThrowException()
         }
 
-        assertArrayEquals(updatedInitializationVector, protectedValue.initializationVector)
-        assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
-        assertArrayEquals(byteArrayOf(123, 34, 116, 101, 115, 116, 70, 105, 101, 108, 100, 34, 58, 34, 116, 101, 115, 116, 86, 97, 108, 117, 101, 34, 125), protectedValue.encryptedValue)
+        assertArrayEquals(updatedInitializationVector, updatedProtectedValue.initializationVector)
+        assertEquals(mockAES256GCMAlgorithm, updatedProtectedValue.encryptionAlgorithm)
+        assertArrayEquals(byteArrayOf(123, 34, 116, 101, 115, 116, 70, 105, 101, 108, 100, 34, 58, 34, 116, 101, 115, 116, 86, 97, 108, 117, 101, 34, 125), updatedProtectedValue.encryptedValue)
     }
 
     @Test
-    fun `If it fails to update a protected value an exception is thrown and the initialization vector and updated encrypted value are not changed`() {
+    fun `Update a protected value and expect different references of the ProtectedValue object itself, the initialization vector and the encrypted value`() {
         val updatedInitializationVector = "bbbbbbbbbbbbbbbbbbbbbbbb".hexToBytes()
-        val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(updatedInitializationVector, true)
+        val mockAES256GCMAlgorithm = createMockAlgorithmAES256GCMWithoutEncryption(updatedInitializationVector)
 
         val initialInitializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
         val initialEncryptedValue = "0000000000000000000000000000000000000000000000000000000000000000".hexToBytes()
@@ -172,14 +172,16 @@ class ProtectedValueTest {
         val unusedEncryptionKey = createNonClearedEncryptionKey()
         val updatedJSONSerializable = TestJSONSerializable("testValue")
 
-        val result = runBlocking { protectedValue.update(unusedEncryptionKey, updatedJSONSerializable) }
-        val exception = (result as Failure).throwable
+        val updatedProtectedValue = runBlocking {
+            protectedValue.update(unusedEncryptionKey, updatedJSONSerializable).resultOrThrowException()
+        }
 
-        assertTrue(exception is EncryptionFailedException)
+        assertTrue(protectedValue !== updatedProtectedValue)
+        assertTrue(protectedValue.initializationVector !== updatedProtectedValue.initializationVector)
+        assertTrue(protectedValue.encryptedValue !== updatedProtectedValue.encryptedValue)
 
-        assertArrayEquals(initialInitializationVector, protectedValue.initializationVector)
-        assertEquals(mockAES256GCMAlgorithm, protectedValue.encryptionAlgorithm)
-        assertArrayEquals(initialEncryptedValue, protectedValue.encryptedValue)
+        // The encryption algorithm holds no data and is an object
+        assertTrue(protectedValue.encryptionAlgorithm === updatedProtectedValue.encryptionAlgorithm)
     }
 
     @Test
@@ -259,27 +261,6 @@ class ProtectedValueTest {
             runBlocking { protectedValue.decrypt(encryptionKey, TestJSONSerializable.Deserializer) }
         }
         assertEquals("The given encryption key can't be used because it is cleared!", exception.message)
-    }
-
-    /**
-     * Copy test
-     */
-
-    @Test
-    fun `Copy a ProtectedValue and expect the references has been changed`() {
-        val protectedValue = createSimpleTestProtectedValue(
-            initializationVector = "aaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes(),
-            encryptedValue = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".hexToBytes()
-        )
-
-        val protectedValueCopy = protectedValue.copy()
-
-        assertTrue(protectedValue !== protectedValueCopy)
-        assertTrue(protectedValue.initializationVector !== protectedValueCopy.initializationVector)
-        assertTrue(protectedValue.encryptedValue !== protectedValueCopy.encryptedValue)
-
-        // The encryption algorithm holds no data and is an object
-        assertTrue(protectedValue.encryptionAlgorithm === protectedValueCopy.encryptionAlgorithm)
     }
 
     companion object {

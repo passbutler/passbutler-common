@@ -30,21 +30,10 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     encryptionAlgorithm: EncryptionAlgorithm
 ) : BaseEncryptedValue, JSONSerializable {
 
-    override var initializationVector = initializationVector
-        private set
-
-    override var encryptedValue = encryptedValue
-        private set
+    override val initializationVector = initializationVector
+    override val encryptedValue = encryptedValue
 
     val encryptionAlgorithm = encryptionAlgorithm
-
-    fun copy(): ProtectedValue<T> {
-        return ProtectedValue(
-            initializationVector.clone(),
-            encryptedValue.clone(),
-            encryptionAlgorithm
-        )
-    }
 
     @Throws(IllegalArgumentException::class)
     suspend fun decrypt(encryptionKey: ByteArray, deserializer: JSONSerializableDeserializer<T>): Result<T> {
@@ -74,29 +63,27 @@ class ProtectedValue<T : JSONSerializable> private constructor(
     }
 
     @Throws(IllegalArgumentException::class)
-    suspend fun update(encryptionKey: ByteArray, updatedValue: T): Result<Unit> {
+    suspend fun update(encryptionKey: ByteArray, updatedValue: T): Result<ProtectedValue<T>> {
         require(!encryptionKey.all { it.toInt() == 0 }) { "The given encryption key can't be used because it is cleared!" }
 
         return try {
-            when (encryptionAlgorithm) {
+            val (newInitializationVector, newEncryptedValue) = when (encryptionAlgorithm) {
                 is EncryptionAlgorithm.Symmetric -> {
                     val newInitializationVector = encryptionAlgorithm.generateInitializationVector().resultOrThrowException()
                     val newEncryptedValue = encryptionAlgorithm.encrypt(newInitializationVector, encryptionKey, updatedValue.toByteArray()).resultOrThrowException()
 
-                    // Update values only if encryption was successful
-                    initializationVector = newInitializationVector
-                    encryptedValue = newEncryptedValue
+                    Pair(newInitializationVector, newEncryptedValue)
                 }
                 is EncryptionAlgorithm.Asymmetric -> {
+                    val newInitializationVector = ByteArray(0)
                     val newEncryptedValue = encryptionAlgorithm.encrypt(encryptionKey, updatedValue.toByteArray()).resultOrThrowException()
 
-                    // Update values only if encryption was successful
-                    initializationVector = ByteArray(0)
-                    encryptedValue = newEncryptedValue
+                    Pair(newInitializationVector, newEncryptedValue)
                 }
             }
 
-            Success(Unit)
+            val newProtectedValue = ProtectedValue<T>(newInitializationVector, newEncryptedValue, encryptionAlgorithm)
+            Success(newProtectedValue)
         } catch (exception: Exception) {
             Failure(exception)
         }
