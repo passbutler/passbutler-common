@@ -15,20 +15,12 @@ interface Bindable<T> {
     data class ObserverWrapper<T>(val observer: BindableObserver<T>, val scope: CoroutineScope?)
 }
 
-class MutableBindable<T>(initialValue: T) : Bindable<T> {
+abstract class DefaultBindable<T> : Bindable<T> {
 
     val observers: Set<Bindable.ObserverWrapper<T>>
         get() = _observers
 
     private val _observers = mutableSetOf<Bindable.ObserverWrapper<T>>()
-
-    override var value: T = initialValue
-        set(value) {
-            if (value != field) {
-                field = value
-                notifyChange()
-            }
-        }
 
     override fun addObserver(scope: CoroutineScope?, notifyOnRegister: Boolean, observer: BindableObserver<T>) {
         synchronized(this) {
@@ -64,4 +56,19 @@ class MutableBindable<T>(initialValue: T) : Bindable<T> {
             observer(newValue)
         }
     }
+}
+
+class ValueGetterBindable<T>(private val valueGetter: () -> T) : DefaultBindable<T>() {
+    override val value: T
+        get() = valueGetter()
+}
+
+class MutableBindable<T>(initialValue: T) : DefaultBindable<T>() {
+    override var value: T = initialValue
+        set(value) {
+            if (value != field) {
+                field = value
+                notifyChange()
+            }
+        }
 }
