@@ -48,6 +48,26 @@ class BindablesTest {
         Assertions.assertTrue(testBindable.observers.isEmpty())
     }
 
+    @Test
+    fun `Active and inactive checks`() {
+        val testBindable = MutableBindable<String?>(null)
+
+        // Check if is initially inactive
+        Assertions.assertFalse(testBindable.isActive)
+
+        val observer: BindableObserver<String?> = {
+            // Do nothing
+        }
+
+        // If observer is set, check if it is active now
+        testBindable.addObserver(null, false, observer)
+        Assertions.assertTrue(testBindable.isActive)
+
+        // Check if is finally inactive again
+        testBindable.removeObserver(observer)
+        Assertions.assertFalse(testBindable.isActive)
+    }
+
     private fun createTestCoroutineScope(threadName: String): CoroutineScope {
         return CoroutineScope(newSingleThreadContext(threadName))
     }
