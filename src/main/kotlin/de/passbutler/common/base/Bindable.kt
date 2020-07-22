@@ -8,6 +8,7 @@ typealias BindableObserver<T> = (newValue: T) -> Unit
 interface Bindable<T> {
     val value: T
     val observers: Set<ObserverWrapper<T>>
+    val isActive: Boolean
 
     fun addObserver(scope: CoroutineScope?, notifyOnRegister: Boolean, observer: BindableObserver<T>)
     fun removeObserver(observer: BindableObserver<T>)
@@ -24,10 +25,11 @@ abstract class DefaultBindable<T> : Bindable<T> {
     override val observers: Set<Bindable.ObserverWrapper<T>>
         get() = _observers
 
-    var isActive: Boolean = false
-        private set
+    override val isActive: Boolean
+        get() = _isActive
 
     private val _observers = mutableSetOf<Bindable.ObserverWrapper<T>>()
+    private var _isActive = false
 
     override fun addObserver(scope: CoroutineScope?, notifyOnRegister: Boolean, observer: BindableObserver<T>) {
         synchronized(this) {
@@ -84,7 +86,7 @@ abstract class DefaultBindable<T> : Bindable<T> {
         val newIsActive = hasActiveObservers()
 
         if (oldIsActive != newIsActive) {
-            isActive = newIsActive
+            _isActive = newIsActive
 
             if (newIsActive) {
                 onActive()
