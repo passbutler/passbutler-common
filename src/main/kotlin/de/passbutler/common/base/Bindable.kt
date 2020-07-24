@@ -69,7 +69,7 @@ abstract class DefaultBindable<T> : Bindable<T> {
     }
 
     override fun onInactive() {
-        // Is called if the no observer is observing the Bindable anymore
+        // Is called if no observer is observing the Bindable anymore
     }
 
     private fun dispatchValueChange(observer: BindableObserver<T>, scope: CoroutineScope?, newValue: T) {
