@@ -81,7 +81,6 @@ abstract class DefaultBindable<T> : Bindable<T> {
     }
 
     private fun checkActiveStateChanged() {
-        // TODO: Synchronize `isActive`?
         val oldIsActive = isActive
         val newIsActive = hasActiveObservers()
 
