@@ -34,7 +34,7 @@ abstract class JSONSerializableDeserializer<T : JSONSerializable> {
         return try {
             deserialize(jsonObject)
         } catch (exception: JSONException) {
-            Logger.debug("The optional JSONSerializable could not be deserialized using the following JSON: $jsonObject (${exception.message})")
+            Logger.trace("The optional JSONSerializable could not be deserialized using the following JSON: $jsonObject (${exception.message})")
             null
         }
     }
@@ -47,7 +47,7 @@ abstract class JSONSerializableDeserializer<T : JSONSerializable> {
             val jsonObject = JSONObject(jsonString)
             deserialize(jsonObject)
         } catch (exception: JSONException) {
-            Logger.debug("The optional JSONSerializable could not be deserialized using the following JSON: $jsonString (${exception.message})")
+            Logger.trace("The optional JSONSerializable could not be deserialized using the following JSON: $jsonString (${exception.message})")
             null
         }
     }
@@ -74,7 +74,7 @@ fun JSONObject.getBooleanOrNull(name: String): Boolean? {
     return try {
         return optBoolean(name)
     } catch (exception: JSONException) {
-        Logger.debug("The optional boolean value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        Logger.trace("The optional boolean value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }
@@ -83,7 +83,7 @@ fun JSONObject.getIntOrNull(name: String): Int? {
     return try {
         return getInt(name)
     } catch (exception: JSONException) {
-        Logger.debug("The optional integer value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        Logger.trace("The optional integer value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }
@@ -92,7 +92,7 @@ fun JSONObject.getLongOrNull(name: String): Long? {
     return try {
         return getLong(name)
     } catch (exception: JSONException) {
-        Logger.debug("The optional long value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        Logger.trace("The optional long value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }
@@ -101,7 +101,7 @@ fun JSONObject.getStringOrNull(name: String): String? {
     return try {
         return getString(name)
     } catch (exception: JSONException) {
-        Logger.debug("The optional string value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        Logger.trace("The optional string value with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }
@@ -164,7 +164,7 @@ fun <T : JSONSerializable> JSONObject.getJSONSerializableOrNull(name: String, de
         val serialized = getJSONObject(name)
         deserializer.deserializeOrNull(serialized)
     } catch (exception: JSONException) {
-        Logger.debug("The optional JSONSerializable with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        Logger.trace("The optional JSONSerializable with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
         null
     }
 }
