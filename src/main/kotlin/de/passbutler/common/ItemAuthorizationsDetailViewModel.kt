@@ -119,11 +119,12 @@ class ItemAuthorizationsDetailViewModel(
     }
 
     suspend fun save(): Result<Unit> {
-        val currentItemAuthorizationEditingViewModels = _itemAuthorizationEditingViewModels.value
+        val changedItemAuthorizationEditingViewModels = _itemAuthorizationEditingViewModels.value
+            .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
 
         val saveResults = listOf(
-            saveExistingItemAuthorizations(currentItemAuthorizationEditingViewModels),
-            saveProvisionalItemAuthorizations(currentItemAuthorizationEditingViewModels)
+            saveExistingItemAuthorizations(changedItemAuthorizationEditingViewModels),
+            saveProvisionalItemAuthorizations(changedItemAuthorizationEditingViewModels)
         )
 
         val firstFailure = saveResults.filterIsInstance(Failure::class.java).firstOrNull()
@@ -138,10 +139,7 @@ class ItemAuthorizationsDetailViewModel(
         }
     }
 
-    private suspend fun saveExistingItemAuthorizations(currentItemAuthorizationEditingViewModels: List<ItemAuthorizationEditingViewModel>): Result<Unit> {
-        val changedItemAuthorizationEditingViewModels = currentItemAuthorizationEditingViewModels
-            .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
-
+    private suspend fun saveExistingItemAuthorizations(changedItemAuthorizationEditingViewModels: List<ItemAuthorizationEditingViewModel>): Result<Unit> {
         var failedResultException: Throwable? = null
         val changedExistingItemAuthorizations = changedItemAuthorizationEditingViewModels.mapNotNull { itemAuthorizationViewModel ->
             (itemAuthorizationViewModel.itemAuthorizationModel as? ItemAuthorizationEditingViewModel.ItemAuthorizationModel.Existing)?.let { itemAuthorizationModel ->
@@ -169,12 +167,9 @@ class ItemAuthorizationsDetailViewModel(
         }
     }
 
-    private suspend fun saveProvisionalItemAuthorizations(currentItemAuthorizationEditingViewModels: List<ItemAuthorizationEditingViewModel>): Result<Unit> {
-        val changedProvisionalItemAuthorizationViewModels = currentItemAuthorizationEditingViewModels
-            .filter { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
-
+    private suspend fun saveProvisionalItemAuthorizations(changedItemAuthorizationEditingViewModels: List<ItemAuthorizationEditingViewModel>): Result<Unit> {
         var failedResultException: Throwable? = null
-        val changedProvisionalItemAuthorizations = changedProvisionalItemAuthorizationViewModels.mapNotNull { itemAuthorizationViewModel ->
+        val changedProvisionalItemAuthorizations = changedItemAuthorizationEditingViewModels.mapNotNull { itemAuthorizationViewModel ->
             (itemAuthorizationViewModel.itemAuthorizationModel as? ItemAuthorizationEditingViewModel.ItemAuthorizationModel.Provisional)?.let { itemAuthorizationModel ->
                 val isReadAllowed = itemAuthorizationViewModel.isReadAllowed.value
                 val isWriteAllowed = itemAuthorizationViewModel.isWriteAllowed.value
