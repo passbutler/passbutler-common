@@ -37,8 +37,8 @@ class ItemAuthorizationsDetailViewModel(
         if (itemViewModel != null) {
             val item = itemViewModel.item
 
-            // Pass a copy of the item key to avoid it get cleared via reference on screen lock
-            val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the ItemAuthorizationEditingViewModel is created!")
+            // Make a copy of the item key to avoid it can be cleared via reference
+            val itemKeyCopy = itemViewModel.itemKey?.copyOf() ?: throw IllegalStateException("The item key is null despite the item authorizations should be edited!")
 
             val existingItemAuthorizationEditingViewModels = createExistingItemAuthorizationEditingViewModels(item)
             val provisionalItemAuthorizationEditingViewModels = createProvisionalItemAuthorizationEditingViewModels(existingItemAuthorizationEditingViewModels, item, itemKeyCopy)
