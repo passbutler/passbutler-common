@@ -59,7 +59,7 @@ interface AuthWebservice {
      * Using `Interceptor` instead `Authenticator` because every request of webservice must be always authenticated.
      */
     private class PasswordAuthenticationInterceptor(username: String, password: String) : Interceptor {
-        private var authorizationHeaderValue = Credentials.basic(username, password)
+        private val authorizationHeaderValue = Credentials.basic(username, password)
 
         @Throws(IOException::class)
         override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
@@ -95,6 +95,7 @@ interface AuthWebservice {
                     .connectTimeout(API_TIMEOUT_CONNECT)
                     .readTimeout(API_TIMEOUT_READ)
                     .writeTimeout(API_TIMEOUT_WRITE)
+                    .addInterceptor(UserAgentInterceptor(buildInformationProvider))
                     .addInterceptor(PasswordAuthenticationInterceptor(username, password))
                     .build()
 
@@ -282,6 +283,7 @@ interface UserWebservice {
                     .connectTimeout(API_TIMEOUT_CONNECT)
                     .readTimeout(API_TIMEOUT_READ)
                     .writeTimeout(API_TIMEOUT_WRITE)
+                    .addInterceptor(UserAgentInterceptor(buildInformationProvider))
                     .addInterceptor(AuthTokenInterceptor(userManager))
                     .authenticator(AuthTokenAuthenticator(authWebservice, userManager))
                     .build()
@@ -348,6 +350,17 @@ private fun String.minimized(): String {
 
 internal fun Type.isListType(clazz: Class<*>): Boolean {
     return (this as? ParameterizedType)?.let { it.rawType == List::class.java && it.actualTypeArguments.firstOrNull() == clazz } ?: false
+}
+
+private class UserAgentInterceptor(private val buildInformationProvider: BuildInformationProviding) : Interceptor {
+    @Throws(IOException::class)
+    override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
+        val request = chain.request()
+        val authenticatedRequest = request.newBuilder()
+            .header("User-Agent", buildInformationProvider.applicationIdentification)
+            .build()
+        return chain.proceed(authenticatedRequest)
+    }
 }
 
 class RequestUnauthorizedException(message: String? = null) : Exception(message)
