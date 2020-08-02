@@ -21,14 +21,14 @@ class ItemAuthorizationsDetailViewModel(
     val itemAuthorizationEditingViewModels: Bindable<List<ItemAuthorizationEditingViewModel>>
         get() = _itemAuthorizationEditingViewModels
 
-    private val _itemAuthorizationEditingViewModels = MutableBindable<List<ItemAuthorizationEditingViewModel>>(emptyList())
-
-    val anyItemAuthorizationEditingViewModelModified = ValueGetterBindable {
+    val itemAuthorizationEditingViewModelsModified = ValueGetterBindable {
         _itemAuthorizationEditingViewModels.value.any { it.isReadAllowed.isModified || it.isWriteAllowed.isModified }
     }
 
+    private val _itemAuthorizationEditingViewModels = MutableBindable<List<ItemAuthorizationEditingViewModel>>(emptyList())
+
     private val itemAuthorizationEditingViewModelsModifiedObserver: BindableObserver<Boolean> = {
-        anyItemAuthorizationEditingViewModelModified.notifyChange()
+        itemAuthorizationEditingViewModelsModified.notifyChange()
     }
 
     suspend fun initializeItemAuthorizationEditingViewModels() {
@@ -62,7 +62,7 @@ class ItemAuthorizationsDetailViewModel(
             }
 
             // Notify bindable to be sure view is triggered after re-initialization
-            anyItemAuthorizationEditingViewModelModified.notifyChange()
+            itemAuthorizationEditingViewModelsModified.notifyChange()
         } else {
             // This edge-case should only happens on Android app if the `Activity` was restored by Android, so the items in `UserViewModel` are still not created
             Logger.warn("The ItemViewModel for id = $itemId was not found!")
