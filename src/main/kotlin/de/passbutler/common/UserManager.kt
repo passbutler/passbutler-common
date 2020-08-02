@@ -155,7 +155,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         }
     }
 
-    suspend fun registerLocalUser(serverUrlString: String, masterPassword: String): Result<Unit> {
+    suspend fun registerLocalUser(serverUrlString: String, invitationCode: String, masterPassword: String): Result<Unit> {
         return try {
             val serverUrl = URI.create(serverUrlString)
             val loggedInUser = findLoggedInUser() ?: throw LoggedInUserUninitializedException
@@ -164,7 +164,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             val createdAuthWebservice = createAuthWebservice(serverUrl, username, masterPassword, buildInformationProvider)
             val createdUserWebservice = createUserWebservice(serverUrl, createdAuthWebservice, this)
 
-            createdUserWebservice.requestWithoutResult { registerUser(loggedInUser) }.resultOrThrowException()
+            createdUserWebservice.requestWithoutResult { registerUser(invitationCode, loggedInUser) }.resultOrThrowException()
 
             _webservices.value = Webservices(createdAuthWebservice, createdUserWebservice)
 

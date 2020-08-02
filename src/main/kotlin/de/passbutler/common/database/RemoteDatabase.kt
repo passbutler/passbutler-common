@@ -35,6 +35,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PUT
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
@@ -113,7 +114,7 @@ interface AuthWebservice {
 
 interface UserWebservice {
     @PUT("/$API_VERSION_PREFIX/register")
-    suspend fun registerUser(@Body user: User): Response<Unit>
+    suspend fun registerUser(@Header("Registration-Invitation-Code") invitationCode: String, @Body user: User): Response<Unit>
 
     @GET("/$API_VERSION_PREFIX/users")
     suspend fun getUsers(): Response<List<User>>
