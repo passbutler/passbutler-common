@@ -34,8 +34,6 @@ class ItemAuthorizationsDetailViewModel(
     suspend fun initializeItemAuthorizationEditingViewModels() {
         val itemViewModel = loggedInUserViewModel.itemViewModels.value.find { it.id == itemId }
 
-        // TODO: Remove Android related comment
-        // The item viewmodel should be only null if the `Activity` was restored by Android
         if (itemViewModel != null) {
             val item = itemViewModel.item
 
@@ -66,6 +64,7 @@ class ItemAuthorizationsDetailViewModel(
             // Notify bindable to be sure view is triggered after re-initialization
             anyItemAuthorizationEditingViewModelModified.notifyChange()
         } else {
+            // This edge-case should only happens on Android app if the `Activity` was restored by Android, so the items in `UserViewModel` are still not created
             Logger.warn("The ItemViewModel for id = $itemId was not found!")
         }
     }
