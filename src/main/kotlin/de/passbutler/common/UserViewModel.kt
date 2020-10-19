@@ -389,6 +389,9 @@ class UserViewModel private constructor(
 
             Logger.debug("Update item viewmodels: itemViewModels.size = ${decryptedItemViewModels.size}")
             itemViewModels.value = decryptedItemViewModels
+
+            // Always notify observers because if the sensible data of an `ItemViewModel` was cleared and decrypted again, the internal change is not noticeable for observers
+            itemViewModels.notifyChange()
         }
     }
 
