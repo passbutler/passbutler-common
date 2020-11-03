@@ -40,5 +40,5 @@ enum class TransitionType {
     NONE
 }
 
-val FADE_TRANSITION_DURATION: Duration = Duration.of(350, ChronoUnit.MILLIS)
-val SLIDE_TRANSITION_DURATION: Duration = Duration.of(500, ChronoUnit.MILLIS)
+val FADE_TRANSITION_DURATION: Duration = Duration.of(300, ChronoUnit.MILLIS)
+val SLIDE_TRANSITION_DURATION: Duration = Duration.of(300, ChronoUnit.MILLIS)
