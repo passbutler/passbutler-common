@@ -3,8 +3,7 @@ package de.passbutler.common
 import de.passbutler.common.base.toHexString
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.Instant
 
 @Throws(IllegalArgumentException::class)
 fun String.hexToBytes(): ByteArray {
@@ -15,8 +14,8 @@ fun String.hexToBytes(): ByteArray {
     }
 }
 
-fun String.toDate(): Date {
-    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse(this)!!
+fun String.toDate(): Instant {
+    return Instant.parse(this)
 }
 
 fun assertJSONObjectEquals(expected: JSONObject, actual: JSONObject) {

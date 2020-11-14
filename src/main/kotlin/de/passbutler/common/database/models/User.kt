@@ -20,7 +20,7 @@ import de.passbutler.common.crypto.models.putProtectedValue
 import de.passbutler.common.database.Synchronizable
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
+import java.time.Instant
 
 data class User(
     val id: String,
@@ -32,8 +32,8 @@ data class User(
     val itemEncryptionSecretKey: ProtectedValue<CryptographicKey>?,
     val settings: ProtectedValue<UserSettings>?,
     override val deleted: Boolean,
-    override val modified: Date,
-    override val created: Date
+    override val modified: Instant,
+    override val created: Instant
 ) : Synchronizable, JSONSerializable {
 
     override val primaryField = id

@@ -63,8 +63,8 @@ class ItemAuthorizationTest {
                 itemKey = itemKey,
                 readOnly = true,
                 deleted = true,
-                modified = "2019-12-27T12:00:01+0000".toDate(),
-                created = "2019-12-27T12:00:00+0000".toDate()
+                modified = "2019-12-27T12:00:01Z".toDate(),
+                created = "2019-12-27T12:00:00Z".toDate()
             )
         }
 

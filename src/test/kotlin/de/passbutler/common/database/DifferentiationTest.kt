@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import java.util.*
 
 class DifferentiationTest {
 
@@ -237,12 +236,12 @@ class DifferentiationTest {
 }
 
 private fun createItem(identification: String, modified: String? = null): TestItem {
-    val currentDate = Date.from(Instant.parse("2019-03-12T10:00:00Z"))
+    val currentDate = Instant.parse("2019-03-12T10:00:00Z")
 
     return TestItem(
         identification,
         false,
-        modified?.let { Date.from(Instant.parse(it)) } ?: currentDate,
+        modified?.let { Instant.parse(it) } ?: currentDate,
         currentDate
     )
 }
@@ -250,8 +249,8 @@ private fun createItem(identification: String, modified: String? = null): TestIt
 data class TestItem(
     val identification: String,
     override val deleted: Boolean,
-    override val modified: Date,
-    override val created: Date
+    override val modified: Instant,
+    override val created: Instant
 ) : Synchronizable {
     override val primaryField = identification
 }

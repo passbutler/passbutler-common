@@ -4,7 +4,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.tinylog.kotlin.Logger
-import java.util.*
+import java.time.Instant
 
 interface JSONSerializable {
     fun serialize(): JSONObject
@@ -175,15 +175,15 @@ fun <T : JSONSerializable> JSONObject.putJSONSerializable(name: String, value: T
 }
 
 /**
- * Extensions to serialize/deserialize `Date`.
+ * Extensions to serialize/deserialize `Instant`.
  */
 
 @Throws(JSONException::class)
-fun JSONObject.getDate(name: String): Date {
+fun JSONObject.getDate(name: String): Instant {
     val serialized = getLong(name)
-    return Date(serialized)
+    return Instant.ofEpochMilli(serialized)
 }
 
-fun JSONObject.putDate(name: String, value: Date): JSONObject {
-    return putLong(name, value.time)
+fun JSONObject.putDate(name: String, value: Instant): JSONObject {
+    return putLong(name, value.toEpochMilli())
 }

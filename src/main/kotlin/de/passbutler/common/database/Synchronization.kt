@@ -1,7 +1,7 @@
 package de.passbutler.common.database
 
 import de.passbutler.common.base.Result
-import java.util.*
+import java.time.Instant
 
 object Differentiation {
     /**
@@ -86,12 +86,12 @@ val <T : Synchronizable> Differentiation.Result<T>.remoteChangedItems
 interface Synchronizable {
     val primaryField: String
     val deleted: Boolean
-    val modified: Date
-    val created: Date
+    val modified: Instant
+    val created: Instant
 }
 
 fun List<Synchronizable>.compactRepresentation(): List<String> {
-    return map { "'${it.primaryField}' (${it.modified.time})" }
+    return map { "'${it.primaryField}' (${it.modified.toEpochMilli()})" }
 }
 
 /**

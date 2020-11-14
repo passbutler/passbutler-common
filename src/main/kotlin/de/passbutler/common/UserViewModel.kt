@@ -28,7 +28,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.tinylog.kotlin.Logger
-import java.util.*
+import java.time.Instant
 import javax.crypto.Cipher
 import kotlin.coroutines.CoroutineContext
 
@@ -376,7 +376,7 @@ class UserViewModel private constructor(
             masterKeyDerivationInformation = masterKeyDerivationInformation,
             masterEncryptionKey = protectedMasterEncryptionKey,
             settings = protectedSettings,
-            modified = Date()
+            modified = Instant.now()
         )
     }
 

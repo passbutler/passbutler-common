@@ -25,7 +25,7 @@ import de.passbutler.common.database.models.generated.UserQueries
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.tinylog.Logger
-import java.util.*
+import java.time.Instant
 
 const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_ENABLE = "PRAGMA foreign_keys=TRUE;"
 const val LOCAL_DATABASE_SQL_FOREIGN_KEYS_DISABLE = "PRAGMA foreign_keys=FALSE;"
@@ -267,8 +267,8 @@ interface ItemAuthorizationDao {
 fun Long.toBoolean(): Boolean = this == 1L
 fun Boolean.toLong(): Long = if (this) 1L else 0L
 
-fun Long.toDate(): Date = Date(this)
-fun Date.toLong(): Long = this.time
+fun Long.toDate(): Instant = Instant.ofEpochMilli(this)
+fun Instant.toLong(): Long = toEpochMilli()
 
 /**
  * Model type converters
@@ -281,7 +281,7 @@ internal fun LoggedInStateStorageModel.toLoggedInStateStorage(): LoggedInStateSt
             userType = UserType.valueOf(userType),
             authToken = authToken?.let { AuthToken.Deserializer.deserialize(it) },
             serverUrl = serverUrl?.toURI(),
-            lastSuccessfulSyncDate = lastSuccessfulSyncDate?.takeIf { it > 0 }?.let { Date(it) },
+            lastSuccessfulSyncDate = lastSuccessfulSyncDate?.takeIf { it > 0 }?.toDate(),
             encryptedMasterPassword = encryptedMasterPassword?.let { EncryptedValue.Deserializer.deserialize(it) }
         )
     } catch (exception: Exception) {
@@ -297,7 +297,7 @@ internal fun LoggedInStateStorage.toLoggedInStateStorageModel(): LoggedInStateSt
         userType = userType.name,
         authToken = authToken?.serialize()?.toString(),
         serverUrl = serverUrl?.toString(),
-        lastSuccessfulSyncDate = lastSuccessfulSyncDate?.time,
+        lastSuccessfulSyncDate = lastSuccessfulSyncDate?.toLong(),
         encryptedMasterPassword = encryptedMasterPassword?.serialize()?.toString()
     )
 }

@@ -17,6 +17,7 @@ import de.passbutler.common.database.models.ItemAuthorization
 import de.passbutler.common.database.models.ItemData
 import de.passbutler.common.database.models.UserType
 import org.tinylog.kotlin.Logger
+import java.time.Instant
 import java.util.*
 
 class ItemEditingViewModel private constructor(
@@ -143,7 +144,7 @@ class ItemEditingViewModel private constructor(
             val itemKey = symmetricEncryptionAlgorithm.generateEncryptionKey().resultOrThrowException()
             val protectedItemData = ProtectedValue.create(symmetricEncryptionAlgorithm, itemKey, itemData).resultOrThrowException()
 
-            val currentDate = Date()
+            val currentDate = Instant.now()
             val item = Item(
                 id = UUID.randomUUID().toString(),
                 userId = loggedInUserId,
@@ -164,7 +165,7 @@ class ItemEditingViewModel private constructor(
 
         return try {
             val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, loggedInUserItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
-            val currentDate = Date()
+            val currentDate = Instant.now()
             val itemAuthorization = ItemAuthorization(
                 id = UUID.randomUUID().toString(),
                 userId = loggedInUserId,
@@ -206,7 +207,7 @@ class ItemEditingViewModel private constructor(
         return try {
             val updatedItemData = createItemData()
             val newProtectedItemData = item.data.update(itemKey, updatedItemData).resultOrThrowException()
-            val currentDate = Date()
+            val currentDate = Instant.now()
 
             val updatedItem = item.copy(
                 data = newProtectedItemData,
@@ -242,7 +243,7 @@ class ItemEditingViewModel private constructor(
         // Only mark item as deleted (item authorization deletion is only managed via item authorizations detail screen)
         val deletedItem = existingItemModel.item.copy(
             deleted = true,
-            modified = Date()
+            modified = Instant.now()
         )
         localRepository.updateItem(deletedItem)
 

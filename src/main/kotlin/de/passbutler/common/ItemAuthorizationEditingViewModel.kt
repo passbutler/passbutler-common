@@ -10,7 +10,7 @@ import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
-import java.util.*
+import java.time.Instant
 
 class ItemAuthorizationEditingViewModel(val itemAuthorizationModel: ItemAuthorizationModel) {
 
@@ -57,7 +57,7 @@ class ItemAuthorizationEditingViewModel(val itemAuthorizationModel: ItemAuthoriz
 
                 return try {
                     val protectedItemKey = ProtectedValue.create(asymmetricEncryptionAlgorithm, userItemEncryptionPublicKey, CryptographicKey(itemKey)).resultOrThrowException()
-                    val currentDate = Date()
+                    val currentDate = Instant.now()
                     val createdItemAuthorization = ItemAuthorization(
                         id = itemAuthorizationId,
                         userId = userId,
@@ -81,7 +81,7 @@ class ItemAuthorizationEditingViewModel(val itemAuthorizationModel: ItemAuthoriz
             val itemAuthorization: ItemAuthorization
         ) : ItemAuthorizationModel() {
             override suspend fun createItemAuthorization(isReadAllowed: Boolean, isWriteAllowed: Boolean): Result<ItemAuthorization> {
-                val currentDate = Date()
+                val currentDate = Instant.now()
                 val updatedItemAuthorization = itemAuthorization.copy(
                     readOnly = !isWriteAllowed,
                     deleted = !isReadAllowed,

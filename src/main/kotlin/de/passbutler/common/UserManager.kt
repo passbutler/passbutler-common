@@ -38,6 +38,7 @@ import kotlinx.coroutines.coroutineScope
 import org.tinylog.kotlin.Logger
 import java.net.SocketTimeoutException
 import java.net.URI
+import java.time.Instant
 import java.util.*
 
 class UserManager(val localRepository: LocalRepository, val buildInformationProvider: BuildInformationProviding) {
@@ -122,7 +123,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
 
             val (itemEncryptionPublicKey, protectedItemEncryptionSecretKey) = generateItemEncryptionKeyPair(masterEncryptionKey)
             val protectedUserSettings = createUserSettings(masterEncryptionKey)
-            val currentDate = Date()
+            val currentDate = Instant.now()
 
             val newUser = User(
                 newUserId,
@@ -288,7 +289,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             Failure(firstFailedTask.throwable)
         } else {
             updateLoggedInStateStorage {
-                it.lastSuccessfulSyncDate = Date()
+                it.lastSuccessfulSyncDate = Instant.now()
             }
 
             Success(Unit)
