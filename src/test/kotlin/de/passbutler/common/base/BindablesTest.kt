@@ -1,15 +1,15 @@
 package de.passbutler.common.base
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.newSingleThreadContext
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.EmptyCoroutineContext
 
 class BindablesTest {
 
     @Test
     fun `Add and remove observer checks`() {
-        val testCoroutineScope = createTestCoroutineScope("Any scope name")
+        val testCoroutineScope = createTestCoroutineScope()
         val testBindable = MutableBindable<String?>(null)
 
         // Initially no observers are set
@@ -68,7 +68,7 @@ class BindablesTest {
         Assertions.assertFalse(testBindable.isActive)
     }
 
-    private fun createTestCoroutineScope(threadName: String): CoroutineScope {
-        return CoroutineScope(newSingleThreadContext(threadName))
+    private fun createTestCoroutineScope(): CoroutineScope {
+        return CoroutineScope(EmptyCoroutineContext)
     }
 }
