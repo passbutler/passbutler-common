@@ -29,14 +29,14 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.3.72"
+    val kotlinVersion = "1.4.10"
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion")
 
     // Kotlin Coroutines core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
 
     // TinyLog logger
-    val tinylogVersion = "2.1.2"
+    val tinylogVersion = "2.2.0"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
@@ -44,20 +44,20 @@ dependencies {
     implementation("org.json:json:20200518")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:coroutines-extensions:1.4.0")
+    implementation("com.squareup.sqldelight:coroutines-extensions:1.4.4")
 
     // Retrofit with OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.7.2")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
 
     // JUnit 5
-    val junitVersion = "5.6.2"
+    val junitVersion = "5.7.0"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.10.0")
+    testImplementation("io.mockk:mockk:1.10.2")
 }
 
 tasks.withType<Test> {
