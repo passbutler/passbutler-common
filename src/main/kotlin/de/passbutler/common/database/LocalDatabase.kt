@@ -291,7 +291,7 @@ internal fun LoggedInStateStorageModel.toLoggedInStateStorage(): LoggedInStateSt
 }
 
 internal fun LoggedInStateStorage.toLoggedInStateStorageModel(): LoggedInStateStorageModel {
-    return LoggedInStateStorageModel.Impl(
+    return LoggedInStateStorageModel(
         id = LoggedInStateStorageDao.STATIC_ID,
         username = username,
         userType = userType.name,
@@ -324,7 +324,7 @@ internal fun UserModel.toUser(): User? {
 }
 
 internal fun User.toUserModel(): UserModel {
-    return UserModel.Impl(
+    return UserModel(
         id = id,
         username = username,
         masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
@@ -356,7 +356,7 @@ internal fun ItemModel.toItem(): Item? {
 }
 
 internal fun Item.toItemModel(): ItemModel {
-    return ItemModel.Impl(
+    return ItemModel(
         id = id,
         userId = userId,
         data = data.serialize().toString(),
@@ -385,7 +385,7 @@ internal fun ItemAuthorizationModel.toItemAuthorization(): ItemAuthorization? {
 }
 
 internal fun ItemAuthorization.toItemAuthorizationModel(): ItemAuthorizationModel {
-    return ItemAuthorizationModel.Impl(
+    return ItemAuthorizationModel(
         id = id,
         userId = userId,
         itemId = itemId,

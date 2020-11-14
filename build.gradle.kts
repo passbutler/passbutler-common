@@ -3,7 +3,7 @@ plugins {
 
     id("org.gradle.java-library")
 
-    id("com.squareup.sqldelight") version "1.3.0"
+    id("com.squareup.sqldelight") version "1.4.4"
 }
 
 buildscript {
