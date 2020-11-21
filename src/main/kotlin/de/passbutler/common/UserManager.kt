@@ -94,7 +94,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             Success(Unit)
         } catch (exception: Exception) {
             Logger.warn("The user could not be logged in - reset logged-in user to avoid corrupt state")
-            resetLoggedInUser()
+            resetLoggedInUser(true)
 
             Failure(exception)
         }
@@ -148,7 +148,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             Success(Unit)
         } catch (exception: Exception) {
             Logger.warn("The user could not be logged in - reset logged-in user to avoid corrupt state")
-            resetLoggedInUser()
+            resetLoggedInUser(true)
 
             Failure(exception)
         } finally {
@@ -310,21 +310,29 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         )
     }
 
-    suspend fun logoutUser() {
-        Logger.debug("Logout user")
+    suspend fun logoutUser(logoutBehaviour: LogoutBehaviour) {
+        Logger.debug("Logout user with logoutBehaviour = $logoutBehaviour")
 
-        resetLoggedInUser()
+        val clearDatabase = when (logoutBehaviour) {
+            LogoutBehaviour.ClearDatabase -> true
+            LogoutBehaviour.KeepDatabase -> false
+        }
+
+        resetLoggedInUser(clearDatabase)
 
         _loggedInUserResult.value = LoggedInUserResult.LoggedOut
     }
 
-    private suspend fun resetLoggedInUser() {
-        Logger.debug("Reset all data of user")
+    private suspend fun resetLoggedInUser(clearDatabase: Boolean) {
+        Logger.debug("Reset webservices and logged-in state storage")
 
         _webservices.value = null
         _loggedInStateStorage.value = null
 
-        localRepository.reset()
+        if (clearDatabase) {
+            Logger.debug("Clear database")
+            localRepository.reset()
+        }
     }
 
     private suspend fun findLoggedInUser(): User? {
@@ -337,6 +345,11 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
         override fun queryResultsChanged() {
             itemsOrItemAuthorizationsChanged.emit()
         }
+    }
+
+    sealed class LogoutBehaviour {
+        object ClearDatabase : LogoutBehaviour()
+        object KeepDatabase : LogoutBehaviour()
     }
 }
 

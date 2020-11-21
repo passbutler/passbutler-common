@@ -123,7 +123,7 @@ class UserViewModel private constructor(
 
                 if (decryptSensibleDataResult is Failure) {
                     Logger.warn(decryptSensibleDataResult.throwable, "The initial unlock of the resources after login failed - logout user because of unusable state")
-                    logout()
+                    logout(UserManager.LogoutBehaviour.ClearDatabase)
                 }
             }
         }
@@ -325,8 +325,8 @@ class UserViewModel private constructor(
         }
     }
 
-    suspend fun logout(): Result<Unit> {
-        userManager.logoutUser()
+    suspend fun logout(logoutBehaviour: UserManager.LogoutBehaviour): Result<Unit> {
+        userManager.logoutUser(logoutBehaviour)
         return Success(Unit)
     }
 
