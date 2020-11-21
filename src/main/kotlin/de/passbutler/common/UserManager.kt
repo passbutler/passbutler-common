@@ -61,6 +61,8 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
     private val _webservices = MutableBindable<Webservices?>(null)
 
     init {
+        Logger.debug("Create new UserManager ($this)")
+
         // Listen for complete application lifecycle for repository changes
         localRepository.itemQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
         localRepository.itemAuthorizationQueries.findAll().addListener(itemsOrItemAuthorizationsQueryListener)
