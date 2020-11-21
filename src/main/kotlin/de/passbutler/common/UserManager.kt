@@ -89,11 +89,14 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             val newUser = createdUserWebservice.requestWithResult { getUserDetails() }.resultOrThrowException()
             localRepository.insertUser(newUser)
 
+            // The logged-in result must be called right before the returning of the result to avoid broken states in login process
             _loggedInUserResult.value = LoggedInUserResult.LoggedIn.PerformedLogin(newUser, masterPassword)
 
             Success(Unit)
         } catch (exception: Exception) {
             Logger.warn("The user could not be logged in - reset logged-in user to avoid corrupt state")
+
+            // No need to call `logoutUser()` because the `loggedInUserResult` field must not be reset because its the last operation before return the success result
             resetLoggedInUser(true)
 
             Failure(exception)
@@ -143,11 +146,14 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
 
             localRepository.insertUser(newUser)
 
+            // The logged-in result must be called right before the returning of the result to avoid broken states in login process
             _loggedInUserResult.value = LoggedInUserResult.LoggedIn.PerformedLogin(newUser, masterPassword)
 
             Success(Unit)
         } catch (exception: Exception) {
             Logger.warn("The user could not be logged in - reset logged-in user to avoid corrupt state")
+
+            // No need to call `logoutUser()` because the `loggedInUserResult` field must not be reset because its the last operation before return the success result
             resetLoggedInUser(true)
 
             Failure(exception)
