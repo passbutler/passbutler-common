@@ -41,8 +41,7 @@ class UserViewModel private constructor(
     private var protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
     val itemEncryptionPublicKey: CryptographicKey,
     private val protectedItemEncryptionSecretKey: ProtectedValue<CryptographicKey>,
-    private var protectedSettings: ProtectedValue<UserSettings>,
-    masterPassword: String?
+    private var protectedSettings: ProtectedValue<UserSettings>
 ) : CoroutineScope {
 
     override val coroutineContext: CoroutineContext
@@ -100,7 +99,7 @@ class UserViewModel private constructor(
     private var persistUserSettingsJob: Job? = null
 
     @Throws(IllegalArgumentException::class)
-    constructor(userManager: UserManager, biometricsProvider: BiometricsProviding, user: User, masterPassword: String?) : this(
+    constructor(userManager: UserManager, biometricsProvider: BiometricsProviding, user: User) : this(
         userManager,
         biometricsProvider,
         user,
@@ -109,24 +108,11 @@ class UserViewModel private constructor(
         user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
         user.itemEncryptionPublicKey,
         user.itemEncryptionSecretKey ?: throw IllegalArgumentException("The given user has no item encryption secret key!"),
-        user.settings ?: throw IllegalArgumentException("The given user has no user settings!"),
-        masterPassword
+        user.settings ?: throw IllegalArgumentException("The given user has no user settings!")
     )
 
     init {
         Logger.debug("Create new UserViewModel ($this)")
-
-        // If the master password was supplied (only on login), directly unlock resources
-        if (masterPassword != null) {
-            launch {
-                val decryptSensibleDataResult = decryptSensibleData(masterPassword)
-
-                if (decryptSensibleDataResult is Failure) {
-                    Logger.warn(decryptSensibleDataResult.throwable, "The initial unlock of the resources after login failed - logout user because of unusable state")
-                    logout(UserManager.LogoutBehaviour.ClearDatabase)
-                }
-            }
-        }
     }
 
     fun cancelJobs() {
@@ -226,7 +212,8 @@ class UserViewModel private constructor(
     }
 
     suspend fun synchronizeData(): Result<Unit> {
-        return userManager.synchronize()
+        val loggedInUser = createModel()
+        return userManager.synchronize(loggedInUser)
     }
 
     suspend fun updateMasterPassword(oldMasterPassword: String, newMasterPassword: String): Result<Unit> {
@@ -323,11 +310,6 @@ class UserViewModel private constructor(
         } catch (exception: Exception) {
             Failure(exception)
         }
-    }
-
-    suspend fun logout(logoutBehaviour: UserManager.LogoutBehaviour): Result<Unit> {
-        userManager.logoutUser(logoutBehaviour)
-        return Success(Unit)
     }
 
     private fun applyUserSettings() {
@@ -487,5 +469,5 @@ class UserViewModel private constructor(
     }
 }
 
-class DecryptMasterEncryptionKeyFailedException(cause: Exception? = null) : Exception(cause)
+class DecryptMasterEncryptionKeyFailedException(cause: Throwable? = null) : Exception(cause)
 class UpdateUserFailedException(cause: Throwable? = null) : Exception(cause)
