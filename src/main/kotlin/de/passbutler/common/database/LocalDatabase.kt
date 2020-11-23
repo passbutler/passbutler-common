@@ -60,10 +60,10 @@ class LocalRepository(
             driver.executeWithoutParameters(LOCAL_DATABASE_SQL_VACUUM)
         }
     }
-}
 
-internal fun SqlDriver.executeWithoutParameters(sql: String) {
-    execute(identifier = null, sql = sql, parameters = 0)
+    private fun SqlDriver.executeWithoutParameters(sql: String) {
+        execute(identifier = null, sql = sql, parameters = 0)
+    }
 }
 
 interface LoggedInStateStorageDao {
