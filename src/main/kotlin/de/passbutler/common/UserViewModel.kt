@@ -469,5 +469,6 @@ class UserViewModel private constructor(
     }
 }
 
+object LoggedInUserViewModelUninitializedException : IllegalStateException("The logged-in UserViewModel is null!")
 class DecryptMasterEncryptionKeyFailedException(cause: Throwable? = null) : Exception(cause)
 class UpdateUserFailedException(cause: Throwable? = null) : Exception(cause)

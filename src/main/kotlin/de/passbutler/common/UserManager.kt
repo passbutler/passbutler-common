@@ -527,6 +527,7 @@ private class ItemAuthorizationsSynchronizationTask(
     }
 }
 
+object UserManagerUninitializedException : IllegalStateException("The UserManager is null!")
 object LoggedInStateStorageUninitializedException : IllegalStateException("Access of uninitialized LoggedInStateStorage!")
 object LoggedInUserNotFoundException : IllegalStateException("The logged-in user was not found!")
 object UserWebserviceUninitializedException : IllegalStateException("The user webservice is not initialized!")
