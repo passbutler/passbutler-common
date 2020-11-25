@@ -211,6 +211,11 @@ class UserViewModel private constructor(
         hidePasswordsEnabled.value = null
     }
 
+    suspend fun registerLocalUser(serverUrlString: String, invitationCode: String, masterPassword: String): Result<Unit> {
+        val loggedInUser = createModel()
+        return userManager.registerLocalUser(loggedInUser, serverUrlString, invitationCode, masterPassword)
+    }
+
     suspend fun synchronizeData(): Result<Unit> {
         val loggedInUser = createModel()
         return userManager.synchronize(loggedInUser)
