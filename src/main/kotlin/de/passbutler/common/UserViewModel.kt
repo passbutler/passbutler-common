@@ -177,6 +177,13 @@ class UserViewModel private constructor(
         hidePasswordsEnabled.addObserver(null, false, hidePasswordsEnabledChangedObserver)
     }
 
+    fun restoreWebservices(masterPassword: String) {
+        // Restore webservices asynchronously to avoid slow network is blocking the caller
+        launch {
+            userManager.restoreWebservices(masterPassword)
+        }
+    }
+
     fun clearSensibleData() {
         Logger.debug("Clear sensible data")
 
