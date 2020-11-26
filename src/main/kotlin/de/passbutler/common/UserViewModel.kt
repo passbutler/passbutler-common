@@ -178,6 +178,8 @@ class UserViewModel private constructor(
     }
 
     fun restoreWebservices(masterPassword: String) {
+        Logger.debug("Restore webservices")
+
         // Restore webservices asynchronously to avoid slow network is blocking the caller
         launch {
             userManager.restoreWebservices(masterPassword)
@@ -219,11 +221,15 @@ class UserViewModel private constructor(
     }
 
     suspend fun registerLocalUser(serverUrlString: String, invitationCode: String, masterPassword: String): Result<Unit> {
+        Logger.debug("Register local user")
+
         val loggedInUser = createModel()
         return userManager.registerLocalUser(loggedInUser, serverUrlString, invitationCode, masterPassword)
     }
 
     suspend fun synchronizeData(): Result<Unit> {
+        Logger.debug("Synchronize data")
+
         val loggedInUser = createModel()
         return userManager.synchronize(loggedInUser)
     }
