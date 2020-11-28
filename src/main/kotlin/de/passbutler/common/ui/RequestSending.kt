@@ -15,12 +15,12 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 interface RequestSending : CoroutineScope, ProgressPresenting, BannerPresenting
 
-fun RequestSending.launchRequestSending(
-    handleSuccess: (() -> Unit)? = null,
+fun <ResultType> RequestSending.launchRequestSending(
+    handleSuccess: ((ResultType) -> Unit)? = null,
     handleFailure: ((error: Throwable) -> Unit)? = null,
     handleLoadingChanged: ((isLoading: Boolean) -> Unit)? = blockingProgressScreen(),
     isCancellable: Boolean = true,
-    block: suspend () -> Result<*>
+    block: suspend () -> Result<ResultType>
 ): Job {
     val viewClassName = javaClass.simpleName
 
@@ -41,7 +41,7 @@ fun RequestSending.launchRequestSending(
             handleLoadingChanged?.invoke(false)
 
             when (result) {
-                is Success -> handleSuccess?.invoke()
+                is Success -> handleSuccess?.invoke(result.result)
                 is Failure -> {
                     val exception = result.throwable
                     Logger.warn(exception, "${viewClassName}: The operation failed with exception")
