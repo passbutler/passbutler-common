@@ -11,3 +11,10 @@ fun <T> Result<T>.resultOrThrowException(): T {
         is Failure -> throw throwable
     }
 }
+
+fun <T> Result<T>.resultOrNull(): T? {
+    return when (this) {
+        is Success -> this.result
+        is Failure -> null
+    }
+}
