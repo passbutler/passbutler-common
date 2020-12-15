@@ -261,6 +261,10 @@ class ItemEditingViewModel private constructor(
             val itemKey: ByteArray
         ) : ItemModel()
     }
+
+    companion object {
+        const val NOTES_MAXIMUM_CHARACTERS = 1000
+    }
 }
 
 internal fun ItemEditingViewModel.ItemModel.asExistingOrNull(): ItemEditingViewModel.ItemModel.Existing? {
