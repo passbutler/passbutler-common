@@ -30,6 +30,33 @@ typealias ServerComputedAuthenticationHash = String
 object Derivation {
 
     /**
+     * Derives the symmetric master key with PBKDF2-SHA-256 using the master password.
+     */
+    @Throws(IllegalArgumentException::class)
+    suspend fun deriveMasterKey(masterPassword: String, keyDerivationInformation: KeyDerivationInformation): Result<ByteArray> {
+        require(masterPassword.isNotBlank()) { "The master password must not be empty!" }
+
+        // The salt should have the same size as the derived key
+        require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
+
+        return withContext(Dispatchers.Default) {
+            try {
+                val preparedPassword = normalizeString(trimString(masterPassword))
+                val hashBytes = performPBKDFWithSHA256(
+                    preparedPassword,
+                    keyDerivationInformation.salt,
+                    keyDerivationInformation.iterationCount,
+                    MASTER_KEY_BIT_LENGTH
+                )
+
+                Success(hashBytes)
+            } catch (exception: Exception) {
+                Failure(exception)
+            }
+        }
+    }
+
+    /**
      * Derives the "Local Computed Authentication Hash" with PBKDF2-SHA-256 using the given username and master password.
      * This method is used to avoid sending master password from client to server in clear text.
      */
@@ -85,33 +112,6 @@ object Derivation {
                 val hashStringWithMetaInformation = "pbkdf2:sha256:$iterationCount\$$saltString\$$hashString"
 
                 Success(hashStringWithMetaInformation)
-            } catch (exception: Exception) {
-                Failure(exception)
-            }
-        }
-    }
-
-    /**
-     * Derives the symmetric master key with PBKDF2-SHA-256 using the master password.
-     */
-    @Throws(IllegalArgumentException::class)
-    suspend fun deriveMasterKey(masterPassword: String, keyDerivationInformation: KeyDerivationInformation): Result<ByteArray> {
-        require(masterPassword.isNotBlank()) { "The master password must not be empty!" }
-
-        // The salt should have the same size as the derived key
-        require(keyDerivationInformation.salt.bitSize == MASTER_KEY_BIT_LENGTH) { "The salt must be 256 bits long!" }
-
-        return withContext(Dispatchers.Default) {
-            try {
-                val preparedPassword = normalizeString(trimString(masterPassword))
-                val hashBytes = performPBKDFWithSHA256(
-                    preparedPassword,
-                    keyDerivationInformation.salt,
-                    keyDerivationInformation.iterationCount,
-                    MASTER_KEY_BIT_LENGTH
-                )
-
-                Success(hashBytes)
             } catch (exception: Exception) {
                 Failure(exception)
             }
