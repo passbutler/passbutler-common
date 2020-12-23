@@ -55,7 +55,7 @@ class UserTest {
             return User(
                 id = "exampleId",
                 username = "myUserName",
-                masterPasswordAuthenticationHash = createTestMasterPasswordAuthenticationHash(),
+                serverComputedAuthenticationHash = createTestServerComputedAuthenticationHash(),
                 masterKeyDerivationInformation = createTestKeyDerivationInformation(),
                 masterEncryptionKey = createTestProtectedValueMasterEncryptionKey(),
                 itemEncryptionPublicKey = createTestItemEncryptionPublicKey(),
@@ -73,7 +73,7 @@ class UserTest {
                 {
                   "id": "exampleId",
                   "username": "myUserName",
-                  "masterPasswordAuthenticationHash": "pbkdf2:sha256:150000${'$'}nww6C11M${'$'}241ac264e71f35826b8a475bdeb8c6b231a4de2b228f7af979f246c24b4905de",
+                  "serverComputedAuthenticationHash": "pbkdf2:sha256:150000${'$'}nww6C11M${'$'}241ac264e71f35826b8a475bdeb8c6b231a4de2b228f7af979f246c24b4905de",
                   "masterKeyDerivationInformation": {
                     "iterationCount": 1234,
                     "salt": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -104,7 +104,7 @@ class UserTest {
             )
         }
 
-        private fun createTestMasterPasswordAuthenticationHash(): String {
+        private fun createTestServerComputedAuthenticationHash(): String {
             return "pbkdf2:sha256:150000\$nww6C11M\$241ac264e71f35826b8a475bdeb8c6b231a4de2b228f7af979f246c24b4905de"
         }
 

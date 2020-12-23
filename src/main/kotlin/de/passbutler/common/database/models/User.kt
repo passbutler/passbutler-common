@@ -25,7 +25,7 @@ import java.time.Instant
 data class User(
     val id: String,
     val username: String,
-    val masterPasswordAuthenticationHash: String?,
+    val serverComputedAuthenticationHash: String?,
     val masterKeyDerivationInformation: KeyDerivationInformation?,
     val masterEncryptionKey: ProtectedValue<CryptographicKey>?,
     val itemEncryptionPublicKey: CryptographicKey,
@@ -42,7 +42,7 @@ data class User(
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_ID, id)
             putString(SERIALIZATION_KEY_USERNAME, username)
-            putString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH, masterPasswordAuthenticationHash)
+            putString(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH, serverComputedAuthenticationHash)
             putJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation)
             putProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
             putJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, itemEncryptionPublicKey)
@@ -63,7 +63,7 @@ data class User(
             return User(
                 id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                masterPasswordAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
+                serverComputedAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
                 masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
                 itemEncryptionPublicKey = jsonObject.getJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, CryptographicKey.Deserializer),
@@ -85,7 +85,7 @@ data class User(
             return User(
                 id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
-                masterPasswordAuthenticationHash = jsonObject.getStringOrNull(SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH),
+                serverComputedAuthenticationHash = jsonObject.getStringOrNull(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
                 masterEncryptionKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
                 itemEncryptionPublicKey = jsonObject.getJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, CryptographicKey.Deserializer),
@@ -101,7 +101,7 @@ data class User(
     companion object {
         private const val SERIALIZATION_KEY_ID = "id"
         private const val SERIALIZATION_KEY_USERNAME = "username"
-        private const val SERIALIZATION_KEY_MASTER_PASSWORD_AUTHENTICATION_HASH = "masterPasswordAuthenticationHash"
+        private const val SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH = "serverComputedAuthenticationHash"
         private const val SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION = "masterKeyDerivationInformation"
         private const val SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY = "masterEncryptionKey"
         private const val SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY = "itemEncryptionPublicKey"

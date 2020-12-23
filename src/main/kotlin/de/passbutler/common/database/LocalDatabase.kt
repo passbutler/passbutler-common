@@ -141,7 +141,7 @@ interface UserDao {
                     val model = user.toUserModel()
                     userQueries.update(
                         username = model.username,
-                        masterPasswordAuthenticationHash = model.masterPasswordAuthenticationHash,
+                        serverComputedAuthenticationHash = model.serverComputedAuthenticationHash,
                         masterKeyDerivationInformation = model.masterKeyDerivationInformation,
                         masterEncryptionKey = model.masterEncryptionKey,
                         itemEncryptionPublicKey = model.itemEncryptionPublicKey,
@@ -307,7 +307,7 @@ internal fun UserModel.toUser(): User? {
         User(
             id = id,
             username = username,
-            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
+            serverComputedAuthenticationHash = serverComputedAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation?.let { KeyDerivationInformation.Deserializer.deserialize(it) },
             masterEncryptionKey = masterEncryptionKey?.let { ProtectedValue.Deserializer<CryptographicKey>().deserialize(it) },
             itemEncryptionPublicKey = CryptographicKey.Deserializer.deserialize(itemEncryptionPublicKey),
@@ -327,7 +327,7 @@ internal fun User.toUserModel(): UserModel {
     return UserModel(
         id = id,
         username = username,
-        masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
+        serverComputedAuthenticationHash = serverComputedAuthenticationHash,
         masterKeyDerivationInformation = masterKeyDerivationInformation?.serialize()?.toString(),
         masterEncryptionKey = masterEncryptionKey?.serialize()?.toString(),
         itemEncryptionPublicKey = itemEncryptionPublicKey.serialize().toString(),

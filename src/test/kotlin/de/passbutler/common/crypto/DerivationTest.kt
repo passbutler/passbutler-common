@@ -34,7 +34,7 @@ class DerivationTest {
             val exception = assertThrows(IllegalArgumentException::class.java) {
                 runBlocking { Derivation.deriveMasterKey(userPassword, keyDerivationInformation) }
             }
-            assertEquals("The password must not be empty!", exception.message)
+            assertEquals("The master password must not be empty!", exception.message)
         }
 
         @Test
@@ -47,7 +47,7 @@ class DerivationTest {
             val exception = assertThrows(IllegalArgumentException::class.java) {
                 runBlocking { Derivation.deriveMasterKey(userPassword, keyDerivationInformation) }
             }
-            assertEquals("The password must not be empty!", exception.message)
+            assertEquals("The master password must not be empty!", exception.message)
         }
 
         /**
@@ -143,7 +143,7 @@ class DerivationTest {
     }
 
     @Nested
-    inner class LocalAuthenticationHashDerivation {
+    inner class LocalComputedAuthenticationHashDerivation {
 
         /**
          * Test values can be generated with following shell command:
@@ -155,11 +155,11 @@ class DerivationTest {
          */
 
         @Test
-        fun `Derive a local authentication hash from username and password`() {
+        fun `Derive a authentication hash from username and password`() {
             val username = "testuser"
             val password = "1234abcd"
 
-            val derivedHash = runBlocking { Derivation.deriveLocalAuthenticationHash(username, password).resultOrThrowException() }
+            val derivedHash = runBlocking { Derivation.deriveLocalComputedAuthenticationHash(username, password).resultOrThrowException() }
 
             assertEquals("e8dcda8125dbbaf57893ad24490096c28c0c079762cb48ce045d770e8cf41d45", derivedHash)
         }
@@ -169,10 +169,10 @@ class DerivationTest {
             val password = "1234abcd"
 
             val usernameWithSpaces = " testuser  "
-            val derivedHashWithSpaces = runBlocking { Derivation.deriveLocalAuthenticationHash(usernameWithSpaces, password).resultOrThrowException() }
+            val derivedHashWithSpaces = runBlocking { Derivation.deriveLocalComputedAuthenticationHash(usernameWithSpaces, password).resultOrThrowException() }
 
             val usernameWithoutSpaces = "testuser"
-            val derivedHashWithoutSpaces = runBlocking { Derivation.deriveLocalAuthenticationHash(usernameWithoutSpaces, password).resultOrThrowException() }
+            val derivedHashWithoutSpaces = runBlocking { Derivation.deriveLocalComputedAuthenticationHash(usernameWithoutSpaces, password).resultOrThrowException() }
 
             assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
         }
@@ -182,17 +182,17 @@ class DerivationTest {
             val username = "testuser"
 
             val passwordWithSpaces = " 1234abcd  "
-            val derivedHashWithSpaces = runBlocking { Derivation.deriveLocalAuthenticationHash(username, passwordWithSpaces).resultOrThrowException() }
+            val derivedHashWithSpaces = runBlocking { Derivation.deriveLocalComputedAuthenticationHash(username, passwordWithSpaces).resultOrThrowException() }
 
             val passwordWithoutSpaces = "1234abcd"
-            val derivedHashWithoutSpaces = runBlocking { Derivation.deriveLocalAuthenticationHash(username, passwordWithoutSpaces).resultOrThrowException() }
+            val derivedHashWithoutSpaces = runBlocking { Derivation.deriveLocalComputedAuthenticationHash(username, passwordWithoutSpaces).resultOrThrowException() }
 
             assertEquals(derivedHashWithSpaces, derivedHashWithoutSpaces)
         }
     }
 
     @Nested
-    inner class ServerAuthenticationHashDerivation {
+    inner class ServerComputedAuthenticationHashDerivation {
 
         @BeforeEach
         fun setUp() {
@@ -201,8 +201,8 @@ class DerivationTest {
             // Return static salt to be sure tests can be reproduced
             val staticSalt = "abcdefgh"
             coEvery { RandomGenerator.generateRandomString(
-                SERVER_AUTHENTICATION_HASH_SALT_LENGTH,
-                SERVER_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS
+                SERVER_COMPUTED_AUTHENTICATION_HASH_SALT_LENGTH,
+                SERVER_COMPUTED_AUTHENTICATION_HASH_SALT_VALID_CHARACTERS
             ) } returns staticSalt
         }
 
@@ -222,9 +222,9 @@ class DerivationTest {
          */
 
         @Test
-        fun `Derive a server authentication hash`() {
+        fun `Derive a authentication hash`() {
             val password = "1234abcd"
-            val derivedHash = runBlocking { Derivation.deriveServerAuthenticationHash(password).resultOrThrowException() }
+            val derivedHash = runBlocking { Derivation.deriveServerComputedAuthenticationHash(password).resultOrThrowException() }
 
             assertEquals("pbkdf2:sha256:150000\$abcdefgh\$e6b929bdae73863bff72d05be560a47c9b026a38233532fdd978ca315e5ea982", derivedHash)
         }
