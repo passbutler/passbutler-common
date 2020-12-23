@@ -9,6 +9,7 @@ import de.passbutler.common.base.Success
 import de.passbutler.common.base.asJSONObjectSequence
 import de.passbutler.common.base.isHttpsScheme
 import de.passbutler.common.base.serialize
+import de.passbutler.common.crypto.LocalComputedAuthenticationHash
 import de.passbutler.common.crypto.models.AuthToken
 import de.passbutler.common.database.models.Item
 import de.passbutler.common.database.models.ItemAuthorization
@@ -59,8 +60,8 @@ interface AuthWebservice {
     /**
      * Using `Interceptor` instead `Authenticator` because every request of webservice must be always authenticated.
      */
-    private class PasswordAuthenticationInterceptor(username: String, password: String) : Interceptor {
-        private val authorizationHeaderValue = Credentials.basic(username, password)
+    private class PasswordAuthenticationInterceptor(username: String, localComputedAuthenticationHash: LocalComputedAuthenticationHash) : Interceptor {
+        private val authorizationHeaderValue = Credentials.basic(username, localComputedAuthenticationHash)
 
         @Throws(IOException::class)
         override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
@@ -88,7 +89,7 @@ interface AuthWebservice {
 
     companion object {
         @Throws(IllegalArgumentException::class)
-        suspend fun create(serverUrl: URI, username: String, password: String, buildInformationProvider: BuildInformationProviding): AuthWebservice {
+        suspend fun create(serverUrl: URI, username: String, localComputedAuthenticationHash: LocalComputedAuthenticationHash, buildInformationProvider: BuildInformationProviding): AuthWebservice {
             require(!(buildInformationProvider.buildType == BuildType.Release && !serverUrl.isHttpsScheme)) { "For release build, only TLS server URL are accepted!" }
 
             return withContext(Dispatchers.IO) {
@@ -97,7 +98,7 @@ interface AuthWebservice {
                     .readTimeout(API_TIMEOUT_READ)
                     .writeTimeout(API_TIMEOUT_WRITE)
                     .addInterceptor(UserAgentInterceptor(buildInformationProvider))
-                    .addInterceptor(PasswordAuthenticationInterceptor(username, password))
+                    .addInterceptor(PasswordAuthenticationInterceptor(username, localComputedAuthenticationHash))
                     .build()
 
                 val retrofitBuilder = Retrofit.Builder()

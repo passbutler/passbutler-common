@@ -16,6 +16,7 @@ import de.passbutler.common.crypto.EncryptionAlgorithm
 import de.passbutler.common.crypto.MASTER_KEY_BIT_LENGTH
 import de.passbutler.common.crypto.MASTER_KEY_ITERATION_COUNT
 import de.passbutler.common.crypto.RandomGenerator
+import de.passbutler.common.crypto.ServerComputedAuthenticationHash
 import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
@@ -108,7 +109,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             _loggedInStateStorage.value = createdLoggedInStateStorage
 
             val newUserId = UUID.randomUUID().toString()
-            val serverMasterPasswordAuthenticationHash = deriveServerMasterPasswordAuthenticationHash(username, masterPassword)
+            val serverComputedAuthenticationHash = deriveServerComputedAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
 
             masterKey = Derivation.deriveMasterKey(masterPassword, masterKeyDerivationInformation).resultOrThrowException()
@@ -124,7 +125,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             val newUser = User(
                 newUserId,
                 username,
-                serverMasterPasswordAuthenticationHash,
+                serverComputedAuthenticationHash,
                 masterKeyDerivationInformation,
                 protectedMasterEncryptionKey,
                 itemEncryptionPublicKey,
@@ -323,10 +324,10 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
 }
 
 @Throws(Exception::class)
-private suspend fun deriveServerMasterPasswordAuthenticationHash(username: String, masterPassword: String): String {
-    val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-    val serverMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(masterPasswordAuthenticationHash).resultOrThrowException()
-    return serverMasterPasswordAuthenticationHash
+suspend fun deriveServerComputedAuthenticationHash(username: String, masterPassword: String): ServerComputedAuthenticationHash {
+    val localComputedAuthenticationHash = Derivation.deriveLocalComputedAuthenticationHash(username, masterPassword).resultOrThrowException()
+    val serverComputedAuthenticationHash = Derivation.deriveServerComputedAuthenticationHash(localComputedAuthenticationHash).resultOrThrowException()
+    return serverComputedAuthenticationHash
 }
 
 private suspend fun createMasterKeyDerivationInformation(): KeyDerivationInformation {
@@ -359,8 +360,8 @@ private suspend fun createUserSettings(masterEncryptionKey: ByteArray): Protecte
 
 @Throws(Exception::class)
 private suspend fun createAuthWebservice(serverUrl: URI, username: String, masterPassword: String, buildInformationProvider: BuildInformationProviding): AuthWebservice {
-    val masterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username, masterPassword).resultOrThrowException()
-    val authWebservice = AuthWebservice.create(serverUrl, username, masterPasswordAuthenticationHash, buildInformationProvider)
+    val localComputedAuthenticationHash = Derivation.deriveLocalComputedAuthenticationHash(username, masterPassword).resultOrThrowException()
+    val authWebservice = AuthWebservice.create(serverUrl, username, localComputedAuthenticationHash, buildInformationProvider)
     return authWebservice
 }
 

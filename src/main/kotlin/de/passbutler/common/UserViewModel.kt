@@ -244,14 +244,13 @@ class UserViewModel private constructor(
             // Test if master password is correct via thrown exception
             decryptMasterEncryptionKey(oldMasterPassword).resultOrThrowException()
 
-            val newLocalMasterPasswordAuthenticationHash = Derivation.deriveLocalAuthenticationHash(username.value, newMasterPassword).resultOrThrowException()
-            val newServerMasterPasswordAuthenticationHash = Derivation.deriveServerAuthenticationHash(newLocalMasterPasswordAuthenticationHash).resultOrThrowException()
+            val newServerComputedAuthenticationHash = deriveServerComputedAuthenticationHash(username.value, newMasterPassword)
 
             newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
             val newProtectedMasterEncryptionKey = protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
             val updatedUser = createModel().copy(
-                masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash,
+                masterPasswordAuthenticationHash = newServerComputedAuthenticationHash,
                 masterEncryptionKey = newProtectedMasterEncryptionKey
             )
 
@@ -268,7 +267,7 @@ class UserViewModel private constructor(
             }
 
             // Finally update the locale fields
-            masterPasswordAuthenticationHash = newServerMasterPasswordAuthenticationHash
+            masterPasswordAuthenticationHash = newServerComputedAuthenticationHash
             protectedMasterEncryptionKey = newProtectedMasterEncryptionKey
 
             // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
