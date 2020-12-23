@@ -36,7 +36,7 @@ class UserViewModel private constructor(
     private val userManager: UserManager,
     val biometricsProvider: BiometricsProviding,
     private val initialUser: User,
-    private var masterPasswordAuthenticationHash: String,
+    private var serverComputedAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private var protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
     val itemEncryptionPublicKey: CryptographicKey,
@@ -103,7 +103,7 @@ class UserViewModel private constructor(
         userManager,
         biometricsProvider,
         user,
-        user.masterPasswordAuthenticationHash ?: throw IllegalArgumentException("The given user has no master password authentication hash!"),
+        user.serverComputedAuthenticationHash ?: throw IllegalArgumentException("The given user has no server computed authentication hash!"),
         user.masterKeyDerivationInformation ?: throw IllegalArgumentException("The given user has no master key derivation information!"),
         user.masterEncryptionKey ?: throw IllegalArgumentException("The given user has no master encryption key!"),
         user.itemEncryptionPublicKey,
@@ -250,7 +250,7 @@ class UserViewModel private constructor(
             val newProtectedMasterEncryptionKey = protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
             val updatedUser = createModel().copy(
-                masterPasswordAuthenticationHash = newServerComputedAuthenticationHash,
+                serverComputedAuthenticationHash = newServerComputedAuthenticationHash,
                 masterEncryptionKey = newProtectedMasterEncryptionKey
             )
 
@@ -267,7 +267,7 @@ class UserViewModel private constructor(
             }
 
             // Finally update the locale fields
-            masterPasswordAuthenticationHash = newServerComputedAuthenticationHash
+            serverComputedAuthenticationHash = newServerComputedAuthenticationHash
             protectedMasterEncryptionKey = newProtectedMasterEncryptionKey
 
             // After all mandatory changes, try to disable biometric unlock because master password re-encryption would require complex flow with biometric authentication UI
@@ -371,7 +371,7 @@ class UserViewModel private constructor(
         // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
         return initialUser.copy(
             username = username.value,
-            masterPasswordAuthenticationHash = masterPasswordAuthenticationHash,
+            serverComputedAuthenticationHash = serverComputedAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation,
             masterEncryptionKey = protectedMasterEncryptionKey,
             settings = protectedSettings,
