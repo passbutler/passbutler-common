@@ -250,6 +250,19 @@ class ItemEditingViewModel private constructor(
         return Success(Unit)
     }
 
+    suspend fun restore(): Result<Unit> {
+        val existingItemModel = (itemModel.value as? ItemModel.Existing) ?: throw IllegalStateException("Only existing items can be restored!")
+        check(isItemModificationAllowed.value) { "The item is not allowed to restore because it has only a readonly item authorization!" }
+
+        val restoredItem = existingItemModel.item.copy(
+            deleted = false,
+            modified = Instant.now()
+        )
+        localRepository.updateItem(restoredItem)
+
+        return Success(Unit)
+    }
+
     sealed class ItemModel {
         object New : ItemModel()
 
