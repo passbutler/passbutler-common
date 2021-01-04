@@ -7,14 +7,13 @@ import java.time.format.FormatStyle
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-val Instant.formattedDateTime: String
-    get() {
-        val dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
-            .withLocale(Locale.getDefault())
-            .withZone(ZoneId.systemDefault())
+fun Instant.formattedDateTime(locale: Locale = Locale.getDefault()): String {
+    val dateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+        .withLocale(locale)
+        .withZone(ZoneId.systemDefault())
 
-        return dateTimeFormatter.format(this)
-    }
+    return dateTimeFormatter.format(this)
+}
 
 fun Instant.formattedRelativeDateTime(relativeDateFormattingTranslations: RelativeDateFormattingTranslations): String {
     val currentTimestampMilliseconds = Instant.now().toEpochMilli()
