@@ -322,7 +322,7 @@ internal fun <T> Response<T>.completeRequestWithResult(): Result<T> {
     val requestCode = code()
 
     return when {
-        isSuccessful == true && responseResult != null -> Success(responseResult)
+        isSuccessful && responseResult != null -> Success(responseResult)
         requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
         requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
@@ -333,7 +333,7 @@ private fun Response<Unit>.completeRequestWithoutResult(): Result<Unit> {
     val requestCode = code()
 
     return when {
-        isSuccessful == true -> Success(Unit)
+        isSuccessful -> Success(Unit)
         requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
         requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
