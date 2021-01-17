@@ -95,10 +95,9 @@ class ItemEditingViewModel private constructor(
     suspend fun save(): Result<Unit> {
         check(isItemModificationAllowed.value) { "The item is not allowed to save because it has only a readonly item authorization!" }
 
-        val currentItemModel = itemModel.value
-
-        val saveResult = when (currentItemModel) {
+        val saveResult = when (val currentItemModel = itemModel.value) {
             is ItemModel.New -> saveNewItem()
+            is ItemModel.Imported -> saveImportedItem(currentItemModel)
             is ItemModel.Existing -> saveExistingItem(currentItemModel)
         }
 
@@ -122,7 +121,7 @@ class ItemEditingViewModel private constructor(
         val itemData = createItemData()
 
         return try {
-            val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData).resultOrThrowException()
+            val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData, false).resultOrThrowException()
             localRepository.insertItem(item)
 
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
@@ -137,7 +136,30 @@ class ItemEditingViewModel private constructor(
         }
     }
 
-    private suspend fun createNewItemAndKey(loggedInUserId: String, itemData: ItemData): Result<Pair<Item, ByteArray>> {
+    private suspend fun saveImportedItem(itemModel: ItemModel.Imported): Result<ItemModel.Existing> {
+        val loggedInUserId = loggedInUserViewModel.id
+        val loggedInUserItemEncryptionPublicKey = loggedInUserViewModel.itemEncryptionPublicKey.key
+
+        val itemData = itemModel.itemData
+        val itemDeleted = itemModel.itemDeleted
+
+        return try {
+            val (item, itemKey) = createNewItemAndKey(loggedInUserId, itemData, itemDeleted).resultOrThrowException()
+            localRepository.insertItem(item)
+
+            val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
+            localRepository.insertItemAuthorization(itemAuthorization)
+
+            val itemOwnerUsername = loggedInUserViewModel.username.value
+
+            val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKey)
+            Success(updatedItemModel)
+        } catch (exception: Exception) {
+            Failure(exception)
+        }
+    }
+
+    private suspend fun createNewItemAndKey(loggedInUserId: String, itemData: ItemData, itemDeleted: Boolean): Result<Pair<Item, ByteArray>> {
         val symmetricEncryptionAlgorithm = EncryptionAlgorithm.Symmetric.AES256GCM
 
         return try {
@@ -149,7 +171,7 @@ class ItemEditingViewModel private constructor(
                 id = UUID.randomUUID().toString(),
                 userId = loggedInUserId,
                 data = protectedItemData,
-                deleted = false,
+                deleted = itemDeleted,
                 modified = currentDate,
                 created = currentDate
             )
@@ -265,6 +287,11 @@ class ItemEditingViewModel private constructor(
 
     sealed class ItemModel {
         object New : ItemModel()
+
+        class Imported(
+                val itemData: ItemData,
+                val itemDeleted: Boolean
+        ) : ItemModel()
 
         class Existing(
             val item: Item,
