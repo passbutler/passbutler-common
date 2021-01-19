@@ -26,9 +26,6 @@ class ItemViewModel(
     val title
         get() = itemData?.title
 
-    val subtitle
-        get() = item.id
-
     val deleted
         get() = item.deleted
 
