@@ -54,7 +54,8 @@ abstract class JSONSerializableDeserializer<T : JSONSerializable> {
 }
 
 fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
-    return (0 until length()).asSequence().mapNotNull { get(it) as? JSONObject }
+    val jsonArray = this
+    return (0 until jsonArray.length()).asSequence().mapNotNull { jsonArray.get(it) as? JSONObject }
 }
 
 fun List<JSONSerializable>.serialize(): JSONArray {
