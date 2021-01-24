@@ -109,6 +109,8 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             _loggedInStateStorage.value = createdLoggedInStateStorage
 
             val newUserId = UUID.randomUUID().toString()
+            val fullName = ""
+
             val serverComputedAuthenticationHash = deriveServerComputedAuthenticationHash(username, masterPassword)
             val masterKeyDerivationInformation = createMasterKeyDerivationInformation()
 
@@ -125,6 +127,7 @@ class UserManager(val localRepository: LocalRepository, val buildInformationProv
             val newUser = User(
                 newUserId,
                 username,
+                fullName,
                 serverComputedAuthenticationHash,
                 masterKeyDerivationInformation,
                 protectedMasterEncryptionKey,

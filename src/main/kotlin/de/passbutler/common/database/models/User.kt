@@ -25,6 +25,7 @@ import java.time.Instant
 data class User(
     val id: String,
     val username: String,
+    val fullName: String,
     val serverComputedAuthenticationHash: String?,
     val masterKeyDerivationInformation: KeyDerivationInformation?,
     val masterEncryptionKey: ProtectedValue<CryptographicKey>?,
@@ -42,6 +43,7 @@ data class User(
         return JSONObject().apply {
             putString(SERIALIZATION_KEY_ID, id)
             putString(SERIALIZATION_KEY_USERNAME, username)
+            putString(SERIALIZATION_KEY_FULLNAME, fullName)
             putString(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH, serverComputedAuthenticationHash)
             putJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, masterKeyDerivationInformation)
             putProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY, masterEncryptionKey)
@@ -63,6 +65,7 @@ data class User(
             return User(
                 id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                fullName = jsonObject.getString(SERIALIZATION_KEY_FULLNAME),
                 serverComputedAuthenticationHash = jsonObject.getString(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializable(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
                 masterEncryptionKey = jsonObject.getProtectedValue(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
@@ -85,6 +88,7 @@ data class User(
             return User(
                 id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
+                fullName = jsonObject.getString(SERIALIZATION_KEY_FULLNAME),
                 serverComputedAuthenticationHash = jsonObject.getStringOrNull(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH),
                 masterKeyDerivationInformation = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
                 masterEncryptionKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
@@ -101,6 +105,7 @@ data class User(
     companion object {
         private const val SERIALIZATION_KEY_ID = "id"
         private const val SERIALIZATION_KEY_USERNAME = "username"
+        private const val SERIALIZATION_KEY_FULLNAME = "fullName"
         private const val SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH = "serverComputedAuthenticationHash"
         private const val SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION = "masterKeyDerivationInformation"
         private const val SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY = "masterEncryptionKey"
