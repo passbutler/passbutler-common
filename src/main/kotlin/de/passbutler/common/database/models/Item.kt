@@ -3,9 +3,11 @@ package de.passbutler.common.database.models
 import de.passbutler.common.base.JSONSerializable
 import de.passbutler.common.base.JSONSerializableDeserializer
 import de.passbutler.common.base.getDate
+import de.passbutler.common.base.getStringList
 import de.passbutler.common.base.putBoolean
 import de.passbutler.common.base.putDate
 import de.passbutler.common.base.putString
+import de.passbutler.common.base.putStringList
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.crypto.models.getProtectedValue
 import de.passbutler.common.crypto.models.putProtectedValue
@@ -65,7 +67,8 @@ data class ItemData(
     val username: String,
     val password: String,
     val url: String,
-    val notes: String
+    val notes: String,
+    val tags: List<String>
 ) : JSONSerializable {
 
     override fun serialize(): JSONObject {
@@ -75,6 +78,7 @@ data class ItemData(
             putString(SERIALIZATION_KEY_PASSWORD, password)
             putString(SERIALIZATION_KEY_URL, url)
             putString(SERIALIZATION_KEY_NOTES, notes)
+            putStringList(SERIALIZATION_KEY_TAGS, tags)
         }
     }
 
@@ -86,7 +90,8 @@ data class ItemData(
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
                 password = jsonObject.getString(SERIALIZATION_KEY_PASSWORD),
                 url = jsonObject.getString(SERIALIZATION_KEY_URL),
-                notes = jsonObject.getString(SERIALIZATION_KEY_NOTES)
+                notes = jsonObject.getString(SERIALIZATION_KEY_NOTES),
+                tags = jsonObject.getStringList(SERIALIZATION_KEY_TAGS)
             )
         }
     }
@@ -97,5 +102,6 @@ data class ItemData(
         private const val SERIALIZATION_KEY_PASSWORD = "password"
         private const val SERIALIZATION_KEY_URL = "url"
         private const val SERIALIZATION_KEY_NOTES = "notes"
+        private const val SERIALIZATION_KEY_TAGS = "tags"
     }
 }

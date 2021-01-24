@@ -243,7 +243,7 @@ class ItemEditingViewModel private constructor(
     }
 
     private fun createItemData(): ItemData {
-        return ItemData(title.value, username.value, password.value, url.value, notes.value)
+        return ItemData(title.value, username.value, password.value, url.value, notes.value, emptyList())
     }
 
     private fun commitChangesAsInitialValue() {
