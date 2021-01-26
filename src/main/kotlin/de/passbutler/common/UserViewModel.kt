@@ -68,7 +68,7 @@ class UserViewModel private constructor(
         get() = userManager.webservices
 
     val id = initialUser.id
-    val username = MutableBindable(initialUser.username)
+    val username = initialUser.username
 
     val itemViewModels = MutableBindable<List<ItemViewModel>>(emptyList())
 
@@ -244,7 +244,7 @@ class UserViewModel private constructor(
             // Test if master password is correct via thrown exception
             decryptMasterEncryptionKey(oldMasterPassword).resultOrThrowException()
 
-            val newServerComputedAuthenticationHash = deriveServerComputedAuthenticationHash(username.value, newMasterPassword)
+            val newServerComputedAuthenticationHash = deriveServerComputedAuthenticationHash(username, newMasterPassword)
 
             newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
             val newProtectedMasterEncryptionKey = protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
@@ -370,7 +370,6 @@ class UserViewModel private constructor(
     private fun createModel(): User {
         // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
         return initialUser.copy(
-            username = username.value,
             serverComputedAuthenticationHash = serverComputedAuthenticationHash,
             masterKeyDerivationInformation = masterKeyDerivationInformation,
             masterEncryptionKey = protectedMasterEncryptionKey,

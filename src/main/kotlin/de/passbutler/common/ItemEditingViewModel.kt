@@ -127,7 +127,7 @@ class ItemEditingViewModel private constructor(
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
             localRepository.insertItemAuthorization(itemAuthorization)
 
-            val itemOwnerUsername = loggedInUserViewModel.username.value
+            val itemOwnerUsername = loggedInUserViewModel.username
 
             val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKey)
             Success(updatedItemModel)
@@ -150,7 +150,7 @@ class ItemEditingViewModel private constructor(
             val itemAuthorization = createNewItemAuthorization(loggedInUserId, loggedInUserItemEncryptionPublicKey, item, itemKey).resultOrThrowException()
             localRepository.insertItemAuthorization(itemAuthorization)
 
-            val itemOwnerUsername = loggedInUserViewModel.username.value
+            val itemOwnerUsername = loggedInUserViewModel.username
 
             val updatedItemModel = ItemModel.Existing(item, itemAuthorization, itemOwnerUsername, itemData, itemKey)
             Success(updatedItemModel)
