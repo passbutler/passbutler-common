@@ -41,6 +41,7 @@ import retrofit2.http.PUT
 import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.net.HttpURLConnection.HTTP_CONFLICT
 import java.net.HttpURLConnection.HTTP_FORBIDDEN
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import java.net.URI
@@ -325,6 +326,7 @@ internal fun <T> Response<T>.completeRequestWithResult(): Result<T> {
         isSuccessful && responseResult != null -> Success(responseResult)
         requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
         requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        requestCode == HTTP_CONFLICT -> Failure(RequestConflictedException("The request conflicted ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
@@ -336,6 +338,7 @@ private fun Response<Unit>.completeRequestWithoutResult(): Result<Unit> {
         isSuccessful -> Success(Unit)
         requestCode == HTTP_UNAUTHORIZED -> Failure(RequestUnauthorizedException("The request in unauthorized ${this.technicalErrorDescription}"))
         requestCode == HTTP_FORBIDDEN -> Failure(RequestForbiddenException("The request in forbidden ${this.technicalErrorDescription}"))
+        requestCode == HTTP_CONFLICT -> Failure(RequestConflictedException("The request conflicted ${this.technicalErrorDescription}"))
         else -> Failure(RequestFailedException("The request result could not be get ${this.technicalErrorDescription}"))
     }
 }
@@ -367,4 +370,5 @@ private class UserAgentInterceptor(private val buildInformationProvider: BuildIn
 
 class RequestUnauthorizedException(message: String? = null) : Exception(message)
 class RequestForbiddenException(message: String? = null) : Exception(message)
+class RequestConflictedException(message: String? = null) : Exception(message)
 class RequestFailedException(message: String? = null) : Exception(message)
