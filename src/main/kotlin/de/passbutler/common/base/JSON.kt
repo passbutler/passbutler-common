@@ -54,7 +54,8 @@ abstract class JSONSerializableDeserializer<T : JSONSerializable> {
 }
 
 fun JSONArray.asJSONObjectSequence(): Sequence<JSONObject> {
-    return (0 until length()).asSequence().mapNotNull { get(it) as? JSONObject }
+    val jsonArray = this
+    return (0 until jsonArray.length()).asSequence().mapNotNull { jsonArray.get(it) as? JSONObject }
 }
 
 fun List<JSONSerializable>.serialize(): JSONArray {
@@ -106,6 +107,15 @@ fun JSONObject.getStringOrNull(name: String): String? {
     }
 }
 
+fun JSONObject.getJSONArrayOrNull(name: String): JSONArray? {
+    return try {
+        return getJSONArray(name)
+    } catch (exception: JSONException) {
+        Logger.trace("The optional array with key '$name' could not be deserialized using the following JSON: $this (${exception.message})")
+        null
+    }
+}
+
 /**
  * The following `put*()` extension methods explicitly ensures the argument type (compared to multi signature `put()` method):
  */
@@ -129,6 +139,11 @@ fun JSONObject.putLong(name: String, value: Long?): JSONObject {
 fun JSONObject.putJSONObject(name: String, value: JSONObject?): JSONObject {
     return put(name, value)
 }
+
+fun JSONObject.putJSONArray(name: String, value: JSONArray?): JSONObject {
+    return put(name, value)
+}
+
 
 /**
  * Extensions to serialize/deserialize a `ByteArray`.
@@ -186,4 +201,24 @@ fun JSONObject.getDate(name: String): Instant {
 
 fun JSONObject.putDate(name: String, value: Instant): JSONObject {
     return putLong(name, value.toEpochMilli())
+}
+
+/**
+ * Extensions to serialize/deserialize a list of strings
+ */
+
+@Throws(JSONException::class)
+fun JSONObject.getStringList(name: String): List<String> {
+    val jsonArray = getJSONArray(name)
+    return (0 until jsonArray.length()).asSequence().mapNotNull { jsonArray.getString(it) }.toList()
+}
+
+fun JSONObject.putStringList(name: String, value: List<String>): JSONObject {
+    val jsonArray = JSONArray().apply {
+        value.forEach {
+            put(it)
+        }
+    }
+
+    return putJSONArray(name, jsonArray)
 }

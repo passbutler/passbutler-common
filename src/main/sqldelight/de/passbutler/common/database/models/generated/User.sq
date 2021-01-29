@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS UserModel (
     `id` TEXT NOT NULL,
     `username` TEXT NOT NULL,
+    `fullName` TEXT NOT NULL,
     `serverComputedAuthenticationHash` TEXT,
     `masterKeyDerivationInformation` TEXT,
     `masterEncryptionKey` TEXT,
@@ -24,10 +25,10 @@ findByUsername:
 SELECT * FROM UserModel WHERE `username` = ? ORDER BY `created`;
 
 insert:
-INSERT OR REPLACE INTO UserModel(`id`, `username`, `serverComputedAuthenticationHash`, `masterKeyDerivationInformation`, `masterEncryptionKey`, `itemEncryptionPublicKey`, `itemEncryptionSecretKey`, `settings`, `deleted`, `modified`, `created`) VALUES ?;
+INSERT OR REPLACE INTO UserModel(`id`, `username`, `fullName`, `serverComputedAuthenticationHash`, `masterKeyDerivationInformation`, `masterEncryptionKey`, `itemEncryptionPublicKey`, `itemEncryptionSecretKey`, `settings`, `deleted`, `modified`, `created`) VALUES ?;
 
 update:
-UPDATE OR REPLACE UserModel SET `username` = ?, `serverComputedAuthenticationHash` = ?, `masterKeyDerivationInformation` = ?, `masterEncryptionKey` = ?, `itemEncryptionPublicKey` = ?, `itemEncryptionSecretKey` = ?, `settings` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;
+UPDATE OR REPLACE UserModel SET `username` = ?, `fullName` = ?, `serverComputedAuthenticationHash` = ?, `masterKeyDerivationInformation` = ?, `masterEncryptionKey` = ?, `itemEncryptionPublicKey` = ?, `itemEncryptionSecretKey` = ?, `settings` = ?, `deleted` = ?, `modified` = ?, `created` = ? WHERE `id` = ?;
 
 deleteAll:
 DELETE FROM UserModel;
