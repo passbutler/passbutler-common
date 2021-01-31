@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS ItemModel(
     `id` TEXT NOT NULL,
     `userId` TEXT NOT NULL,
-    `data` TEXT NOT NULL,
+    `data` TEXT,
     `deleted` INTEGER NOT NULL,
     `modified` INTEGER NOT NULL,
     `created` INTEGER NOT NULL,

@@ -228,7 +228,7 @@ class ItemEditingViewModel private constructor(
     private suspend fun createUpdatedItem(item: Item, itemKey: ByteArray): Result<Pair<Item, ItemData>> {
         return try {
             val updatedItemData = createItemData()
-            val newProtectedItemData = item.data.update(itemKey, updatedItemData).resultOrThrowException()
+            val newProtectedItemData = item.data?.update(itemKey, updatedItemData)?.resultOrThrowException() ?: throw ItemDataNotAvailableException
             val currentDate = Instant.now()
 
             val updatedItem = item.copy(

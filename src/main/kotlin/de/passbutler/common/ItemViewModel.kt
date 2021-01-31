@@ -43,7 +43,7 @@ class ItemViewModel(
             val decryptedItemKey = itemAuthorization.itemKey.decrypt(userItemEncryptionSecretKey, CryptographicKey.Deserializer).resultOrThrowException().key
             itemKey = decryptedItemKey
 
-            val decryptedItemData = item.data.decrypt(decryptedItemKey, ItemData.Deserializer).resultOrThrowException()
+            val decryptedItemData = item.data?.decrypt(decryptedItemKey, ItemData.Deserializer)?.resultOrThrowException() ?: throw ItemDataNotAvailableException
             itemData = decryptedItemData
 
             Success(Unit)
@@ -95,3 +95,5 @@ class ItemViewModel(
 
 val ItemViewModel.unlockedItemData: ItemData
     get() = itemData ?: throw IllegalStateException("The item data is null despite it was guaranteed to be unlocked!")
+
+object ItemDataNotAvailableException : IllegalStateException("The data of the item not available!")
