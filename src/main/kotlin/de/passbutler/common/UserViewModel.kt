@@ -35,7 +35,7 @@ import kotlin.coroutines.CoroutineContext
 class UserViewModel private constructor(
     private val userManager: UserManager,
     val biometricsProvider: BiometricsProviding,
-    private val initialUser: User,
+    initialUser: User,
     private var serverComputedAuthenticationHash: String,
     private val masterKeyDerivationInformation: KeyDerivationInformation,
     private var protectedMasterEncryptionKey: ProtectedValue<CryptographicKey>,
@@ -91,6 +91,8 @@ class UserViewModel private constructor(
 
     private val automaticLockTimeoutChangedObserver: BindableObserver<Int?> = { applyUserSettings() }
     private val hidePasswordsEnabledChangedObserver: BindableObserver<Boolean?> = { applyUserSettings() }
+
+    private val userModel = MutableBindable(initialUser)
 
     private var masterEncryptionKey: ByteArray? = null
     private var itemEncryptionSecretKey: ByteArray? = null
@@ -222,16 +224,12 @@ class UserViewModel private constructor(
 
     suspend fun registerLocalUser(serverUrlString: String, invitationCode: String, masterPassword: String): Result<Unit> {
         Logger.debug("Register local user")
-
-        val loggedInUser = createModel()
-        return userManager.registerLocalUser(loggedInUser, serverUrlString, invitationCode, masterPassword)
+        return userManager.registerLocalUser(userModel.value, serverUrlString, invitationCode, masterPassword)
     }
 
     suspend fun synchronizeData(): Result<Unit> {
         Logger.debug("Synchronize data")
-
-        val loggedInUser = createModel()
-        return userManager.synchronize(loggedInUser)
+        return userManager.synchronize(userModel.value)
     }
 
     suspend fun updateMasterPassword(oldMasterPassword: String, newMasterPassword: String): Result<Unit> {
@@ -249,12 +247,13 @@ class UserViewModel private constructor(
             newMasterKey = Derivation.deriveMasterKey(newMasterPassword, masterKeyDerivationInformation).resultOrThrowException()
             val newProtectedMasterEncryptionKey = protectedMasterEncryptionKey.update(newMasterKey, CryptographicKey(masterEncryptionKey)).resultOrThrowException()
 
-            val updatedUser = createModel().copy(
+            userModel.value = userModel.value.copy(
                 serverComputedAuthenticationHash = newServerComputedAuthenticationHash,
-                masterEncryptionKey = newProtectedMasterEncryptionKey
+                masterEncryptionKey = newProtectedMasterEncryptionKey,
+                modified = Instant.now()
             )
 
-            val updateUserResult = userManager.updateUser(updatedUser)
+            val updateUserResult = userManager.updateUser(userModel.value)
 
             // Throw wrapped exception to be able to determine that this call failed (used to show concrete error string in UI)
             if (updateUserResult is Failure) {
@@ -358,24 +357,17 @@ class UserViewModel private constructor(
                 try {
                     protectedSettings = protectedSettings.update(masterEncryptionKey, settings).resultOrThrowException()
 
-                    val user = createModel()
-                    localRepository.updateUser(user)
+                    userModel.value = userModel.value.copy(
+                        settings = protectedSettings,
+                        modified = Instant.now()
+                    )
+
+                    localRepository.updateUser(userModel.value)
                 } catch (exception: Exception) {
                     Logger.warn(exception, "The user settings could not be updated")
                 }
             }
         }
-    }
-
-    private fun createModel(): User {
-        // Only update fields that are allowed to modify (server reject changes on non-allowed field anyway)
-        return initialUser.copy(
-            serverComputedAuthenticationHash = serverComputedAuthenticationHash,
-            masterKeyDerivationInformation = masterKeyDerivationInformation,
-            masterEncryptionKey = protectedMasterEncryptionKey,
-            settings = protectedSettings,
-            modified = Instant.now()
-        )
     }
 
     private fun updateItemViewModels() {
