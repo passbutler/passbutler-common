@@ -21,8 +21,8 @@ interface LoggedInStateStorage {
         override var lastSuccessfulSyncDate: Instant?,
         override var encryptedMasterPassword: EncryptedValue?
     ) : LoggedInStateStorage {
-        constructor(username: String, userType: UserType): this(username, userType, null, null, null, null)
-        constructor(username: String, userType: UserType, serverUrl: URI): this(username, userType, null, serverUrl, null, null)
+        constructor(username: String, userType: UserType) : this(username, userType, null, null, null, null)
+        constructor(username: String, userType: UserType, serverUrl: URI) : this(username, userType, null, serverUrl, null, null)
     }
 }
 
