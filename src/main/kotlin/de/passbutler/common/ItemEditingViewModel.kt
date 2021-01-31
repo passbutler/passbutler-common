@@ -289,8 +289,8 @@ class ItemEditingViewModel private constructor(
         object New : ItemModel()
 
         class Imported(
-                val itemData: ItemData,
-                val itemDeleted: Boolean
+            val itemData: ItemData,
+            val itemDeleted: Boolean
         ) : ItemModel()
 
         class Existing(
