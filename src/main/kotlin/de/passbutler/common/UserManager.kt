@@ -470,16 +470,18 @@ private class ItemsSynchronizationTask(
 
                 val localItems = localItemsDeferred.await()
                 val remoteItems = remoteItemsDeferred.await()
-                val differentiationResult = Differentiation.collectChanges(localItems, remoteItems)
+                val differentiationResult = Differentiation.collectChanges(localItems, remoteItems).let { unfilteredDifferentiationResult ->
+                    unfilteredDifferentiationResult.copy(
+                        newItemsForRemote = unfilteredDifferentiationResult.newItemsForRemote.filterRemoteItems(),
+                        modifiedItemsForRemote = unfilteredDifferentiationResult.modifiedItemsForRemote.filterRemoteItems()
+                    )
+                }
 
                 // Update local database
                 localRepository.insertItem(*differentiationResult.newItemsForLocal.toTypedArray())
                 localRepository.updateItem(*differentiationResult.modifiedItemsForLocal.toTypedArray())
 
-                val remoteChangedItems = differentiationResult.remoteChangedItems.filter { item ->
-                    // Only update items where the user has a non-deleted, non-readonly item authorization
-                    localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserId && !it.readOnly && !it.deleted }
-                }
+                val remoteChangedItems = differentiationResult.remoteChangedItems
 
                 // Update remote webservice if necessary
                 if (remoteChangedItems.isNotEmpty()) {
@@ -490,6 +492,13 @@ private class ItemsSynchronizationTask(
             }
         } catch (exception: Exception) {
             Failure(exception)
+        }
+    }
+
+    private suspend fun List<Item>.filterRemoteItems(): List<Item> {
+        return filter { item ->
+            // Only accept items where the user has a non-readonly, non-deleted item authorization
+            localRepository.findItemAuthorizationForItem(item).any { it.userId == loggedInUserId && !it.readOnly && !it.deleted }
         }
     }
 }
@@ -507,16 +516,18 @@ private class ItemAuthorizationsSynchronizationTask(
 
                 val localItemAuthorizations = localItemAuthorizationsDeferred.await()
                 val remoteItemAuthorizations = remoteItemAuthorizationsDeferred.await()
-                val differentiationResult = Differentiation.collectChanges(localItemAuthorizations, remoteItemAuthorizations)
+                val differentiationResult = Differentiation.collectChanges(localItemAuthorizations, remoteItemAuthorizations).let { unfilteredDifferentiationResult ->
+                    unfilteredDifferentiationResult.copy(
+                        newItemsForRemote = unfilteredDifferentiationResult.newItemsForRemote.filterRemoteItemAuthorizations(),
+                        modifiedItemsForRemote = unfilteredDifferentiationResult.modifiedItemsForRemote.filterRemoteItemAuthorizations()
+                    )
+                }
 
                 // Update local database
                 localRepository.insertItemAuthorization(*differentiationResult.newItemsForLocal.toTypedArray())
                 localRepository.updateItemAuthorization(*differentiationResult.modifiedItemsForLocal.toTypedArray())
 
-                val remoteChangedItemAuthorizations = differentiationResult.remoteChangedItems.filter { itemAuthorization ->
-                    // Only update item authorizations where the user is the owner of the item
-                    localRepository.findItem(itemAuthorization.itemId)?.userId == loggedInUserId
-                }
+                val remoteChangedItemAuthorizations = differentiationResult.remoteChangedItems
 
                 // Update remote webservice if necessary
                 if (remoteChangedItemAuthorizations.isNotEmpty()) {
@@ -527,6 +538,13 @@ private class ItemAuthorizationsSynchronizationTask(
             }
         } catch (exception: Exception) {
             Failure(exception)
+        }
+    }
+
+    private suspend fun List<ItemAuthorization>.filterRemoteItemAuthorizations(): List<ItemAuthorization> {
+        return filter { itemAuthorization ->
+            // Only accept item authorizations where the user is the owner of the item
+            localRepository.findItem(itemAuthorization.itemId)?.userId == loggedInUserId
         }
     }
 }
