@@ -347,7 +347,7 @@ internal fun ItemModel.toItem(): Item? {
         Item(
             id = id,
             userId = userId,
-            data = ProtectedValue.Deserializer<ItemData>().deserialize(data),
+            data = data?.let { ProtectedValue.Deserializer<ItemData>().deserialize(it) },
             deleted = deleted.toBoolean(),
             modified = modified.toDate(),
             created = created.toDate()
@@ -362,7 +362,7 @@ internal fun Item.toItemModel(): ItemModel {
     return ItemModel(
         id = id,
         userId = userId,
-        data = data.serialize().toString(),
+        data = data?.serialize()?.toString(),
         deleted = deleted.toLong(),
         modified = modified.toLong(),
         created = created.toLong()

@@ -9,49 +9,50 @@ import de.passbutler.common.hexToBytes
 import de.passbutler.common.toDate
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class UserTest {
 
-    @Test
-    fun `Serialize and deserialize a User should result an equal object`() {
-        val exampleUser = createExampleUser()
+    @Nested
+    inner class DefaultUser {
+        @Test
+        fun `Serialize and deserialize a default User should result an equal object`() {
+            val exampleUser = createExampleDefaultUser()
 
-        val serializedUser = exampleUser.serialize()
-        val deserializedUser = User.DefaultUserDeserializer.deserializeOrNull(serializedUser)
+            val serializedUser = exampleUser.serialize()
+            val deserializedUser = User.DefaultUserDeserializer.deserializeOrNull(serializedUser)
 
-        assertEquals(exampleUser, deserializedUser)
-    }
+            assertEquals(exampleUser, deserializedUser)
+        }
 
-    @Test
-    fun `Serialize an User`() {
-        val exampleUser = createExampleUser()
-        val expectedSerialized = createSerializedExampleUser()
+        @Test
+        fun `Serialize a default User`() {
+            val exampleUser = createExampleDefaultUser()
+            val expectedSerialized = createSerializedExampleDefaultUser()
 
-        assertJSONObjectEquals(expectedSerialized, exampleUser.serialize())
-    }
+            assertJSONObjectEquals(expectedSerialized, exampleUser.serialize())
+        }
 
-    @Test
-    fun `Deserialize an User`() {
-        val serializedUser = createSerializedExampleUser()
-        val expectedUser = createExampleUser()
+        @Test
+        fun `Deserialize a default User`() {
+            val serializedUser = createSerializedExampleDefaultUser()
+            val expectedUser = createExampleDefaultUser()
 
-        assertEquals(expectedUser, User.DefaultUserDeserializer.deserializeOrNull(serializedUser))
-    }
+            assertEquals(expectedUser, User.DefaultUserDeserializer.deserializeOrNull(serializedUser))
+        }
 
-    @Test
-    fun `Deserialize an invalid User returns null`() {
-        val serializedUser = JSONObject(
-            """{"foo":"bar"}"""
-        )
-        val expectedUser = null
+        @Test
+        fun `Deserialize an invalid default User returns null`() {
+            val serializedUser = JSONObject(
+                """{"foo":"bar"}"""
+            )
+            val expectedUser = null
 
-        assertEquals(expectedUser, User.DefaultUserDeserializer.deserializeOrNull(serializedUser))
-    }
+            assertEquals(expectedUser, User.DefaultUserDeserializer.deserializeOrNull(serializedUser))
+        }
 
-    companion object {
-        private fun createExampleUser(): User {
-
+        private fun createExampleDefaultUser(): User {
             return User(
                 id = "exampleId",
                 username = "myUserName",
@@ -68,7 +69,7 @@ class UserTest {
             )
         }
 
-        private fun createSerializedExampleUser(): JSONObject {
+        private fun createSerializedExampleDefaultUser(): JSONObject {
             return JSONObject(
                 """
                 {
@@ -105,7 +106,83 @@ class UserTest {
                 """.trimIndent()
             )
         }
+    }
 
+    @Nested
+    inner class PartialUser {
+        @Test
+        fun `Serialize and deserialize a partial User should result an equal object`() {
+            val exampleUser = createExamplePartialUser()
+
+            val serializedUser = exampleUser.serialize()
+            val deserializedUser = User.PartialUserDeserializer.deserializeOrNull(serializedUser)
+
+            assertEquals(exampleUser, deserializedUser)
+        }
+
+        @Test
+        fun `Serialize a partial User`() {
+            val exampleUser = createExamplePartialUser()
+            val expectedSerialized = createSerializedExamplePartialUser()
+
+            assertJSONObjectEquals(expectedSerialized, exampleUser.serialize())
+        }
+
+        @Test
+        fun `Deserialize a partial User`() {
+            val serializedUser = createSerializedExamplePartialUser()
+            val expectedUser = createExamplePartialUser()
+
+            assertEquals(expectedUser, User.PartialUserDeserializer.deserializeOrNull(serializedUser))
+        }
+
+        @Test
+        fun `Deserialize an invalid partial User returns null`() {
+            val serializedUser = JSONObject(
+                """{"foo":"bar"}"""
+            )
+            val expectedUser = null
+
+            assertEquals(expectedUser, User.PartialUserDeserializer.deserializeOrNull(serializedUser))
+        }
+
+        private fun createExamplePartialUser(): User {
+            return User(
+                id = "exampleId",
+                username = "myUserName",
+                fullName = "My Full Name",
+                serverComputedAuthenticationHash = null,
+                masterKeyDerivationInformation = null,
+                masterEncryptionKey = null,
+                itemEncryptionPublicKey = createTestItemEncryptionPublicKey(),
+                itemEncryptionSecretKey = null,
+                settings = null,
+                deleted = true,
+                modified = "2019-12-27T12:00:01Z".toDate(),
+                created = "2019-12-27T12:00:00Z".toDate()
+            )
+        }
+
+        private fun createSerializedExamplePartialUser(): JSONObject {
+            return JSONObject(
+                """
+                {
+                  "id": "exampleId",
+                  "username": "myUserName",
+                  "fullName": "My Full Name",
+                  "itemEncryptionPublicKey": {
+                    "key": "qrvM"
+                  },
+                  "deleted": true,
+                  "modified": 1577448001000,
+                  "created": 1577448000000
+                }
+                """.trimIndent()
+            )
+        }
+    }
+
+    companion object {
         private fun createTestServerComputedAuthenticationHash(): String {
             return "pbkdf2:sha256:150000\$nww6C11M\$241ac264e71f35826b8a475bdeb8c6b231a4de2b228f7af979f246c24b4905de"
         }

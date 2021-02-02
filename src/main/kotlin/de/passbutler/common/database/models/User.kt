@@ -4,8 +4,6 @@ import de.passbutler.common.base.JSONSerializable
 import de.passbutler.common.base.JSONSerializableDeserializer
 import de.passbutler.common.base.getDate
 import de.passbutler.common.base.getJSONSerializable
-import de.passbutler.common.base.getJSONSerializableOrNull
-import de.passbutler.common.base.getStringOrNull
 import de.passbutler.common.base.putBoolean
 import de.passbutler.common.base.putDate
 import de.passbutler.common.base.putInt
@@ -15,7 +13,6 @@ import de.passbutler.common.crypto.models.CryptographicKey
 import de.passbutler.common.crypto.models.KeyDerivationInformation
 import de.passbutler.common.crypto.models.ProtectedValue
 import de.passbutler.common.crypto.models.getProtectedValue
-import de.passbutler.common.crypto.models.getProtectedValueOrNull
 import de.passbutler.common.crypto.models.putProtectedValue
 import de.passbutler.common.database.Synchronizable
 import org.json.JSONException
@@ -89,12 +86,12 @@ data class User(
                 id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 username = jsonObject.getString(SERIALIZATION_KEY_USERNAME),
                 fullName = jsonObject.getString(SERIALIZATION_KEY_FULLNAME),
-                serverComputedAuthenticationHash = jsonObject.getStringOrNull(SERIALIZATION_KEY_SERVER_COMPUTED_AUTHENTICATION_HASH),
-                masterKeyDerivationInformation = jsonObject.getJSONSerializableOrNull(SERIALIZATION_KEY_MASTER_KEY_DERIVATION_INFORMATION, KeyDerivationInformation.Deserializer),
-                masterEncryptionKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_MASTER_ENCRYPTION_KEY),
+                serverComputedAuthenticationHash = null,
+                masterKeyDerivationInformation = null,
+                masterEncryptionKey = null,
                 itemEncryptionPublicKey = jsonObject.getJSONSerializable(SERIALIZATION_KEY_ITEM_ENCRYPTION_PUBLIC_KEY, CryptographicKey.Deserializer),
-                itemEncryptionSecretKey = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_ITEM_ENCRYPTION_SECRET_KEY),
-                settings = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_SETTINGS),
+                itemEncryptionSecretKey = null,
+                settings = null,
                 deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                 modified = jsonObject.getDate(SERIALIZATION_KEY_MODIFIED),
                 created = jsonObject.getDate(SERIALIZATION_KEY_CREATED)

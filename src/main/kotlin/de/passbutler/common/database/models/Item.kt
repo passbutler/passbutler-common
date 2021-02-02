@@ -9,7 +9,7 @@ import de.passbutler.common.base.putDate
 import de.passbutler.common.base.putString
 import de.passbutler.common.base.putStringList
 import de.passbutler.common.crypto.models.ProtectedValue
-import de.passbutler.common.crypto.models.getProtectedValue
+import de.passbutler.common.crypto.models.getProtectedValueOrNull
 import de.passbutler.common.crypto.models.putProtectedValue
 import de.passbutler.common.database.Synchronizable
 import org.json.JSONException
@@ -19,7 +19,7 @@ import java.time.Instant
 data class Item(
     val id: String,
     val userId: String,
-    val data: ProtectedValue<ItemData>,
+    val data: ProtectedValue<ItemData>?,
     override val deleted: Boolean,
     override val modified: Instant,
     override val created: Instant
@@ -44,7 +44,7 @@ data class Item(
             return Item(
                 id = jsonObject.getString(SERIALIZATION_KEY_ID),
                 userId = jsonObject.getString(SERIALIZATION_KEY_USER_ID),
-                data = jsonObject.getProtectedValue(SERIALIZATION_KEY_DATA),
+                data = jsonObject.getProtectedValueOrNull(SERIALIZATION_KEY_DATA),
                 deleted = jsonObject.getBoolean(SERIALIZATION_KEY_DELETED),
                 modified = jsonObject.getDate(SERIALIZATION_KEY_MODIFIED),
                 created = jsonObject.getDate(SERIALIZATION_KEY_CREATED)

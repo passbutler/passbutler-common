@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 class ItemDataTest {
 
     @Test
-    fun `Serialize and deserialize a ItemData should result an equal object`() {
+    fun `Serialize and deserialize an ItemData should result an equal object`() {
         val exampleItemData = createExampleItemData()
 
         val serializedItemData = exampleItemData.serialize()

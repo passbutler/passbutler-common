@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class ItemAuthorizationTest {
 
     @Test
-    fun `Serialize and deserialize a ItemAuthorization should result an equal object`() {
+    fun `Serialize and deserialize an ItemAuthorization should result an equal object`() {
         val exampleItemAuthorization = createExampleItemAuthorization()
 
         val serializedItemAuthorization = exampleItemAuthorization.serialize()
