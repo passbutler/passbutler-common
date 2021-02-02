@@ -25,7 +25,7 @@ class ItemTest {
         }
 
         @Test
-        fun `Serialize an default Item`() {
+        fun `Serialize a default Item`() {
             val exampleItem = createExampleDefaultItem()
             val expectedSerialized = createSerializedExampleDefaultItem()
 
@@ -33,7 +33,7 @@ class ItemTest {
         }
 
         @Test
-        fun `Deserialize an default Item`() {
+        fun `Deserialize a default Item`() {
             val serializedItem = createSerializedExampleDefaultItem()
             val expectedItem = createExampleDefaultItem()
 
@@ -100,7 +100,7 @@ class ItemTest {
         }
 
         @Test
-        fun `Serialize an partial Item`() {
+        fun `Serialize a partial Item`() {
             val exampleItem = createExamplePartialItem()
             val expectedSerialized = createSerializedExamplePartialItem()
 
@@ -108,7 +108,7 @@ class ItemTest {
         }
 
         @Test
-        fun `Deserialize an partial Item`() {
+        fun `Deserialize a partial Item`() {
             val serializedItem = createSerializedExamplePartialItem()
             val expectedItem = createExamplePartialItem()
 

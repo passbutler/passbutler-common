@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 class UserSettingsTest {
 
     @Test
-    fun `Serialize and deserialize a UserSettings should result an equal object`() {
+    fun `Serialize and deserialize an UserSettings should result an equal object`() {
         val exampleUserSettings = createExampleUserSettings()
 
         val serializedUserSettings = exampleUserSettings.serialize()
