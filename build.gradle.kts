@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.4.21"
+    val kotlinVersion = "1.4.30"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
@@ -46,13 +46,13 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
 
     // JUnit 5
-    val junitVersion = "5.7.0"
+    val junitVersion = "5.7.1"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.10.5")
+    testImplementation("io.mockk:mockk:1.10.6")
 }
 
 tasks.withType<Test> {
