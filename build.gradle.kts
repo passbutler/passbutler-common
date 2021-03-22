@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
 
@@ -24,11 +26,11 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.4.30"
+    val kotlinVersion = "1.4.31"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
 
     // TinyLog logger
     val tinylogVersion = "2.2.1"
@@ -52,7 +54,14 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.10.6")
+    testImplementation("io.mockk:mockk:1.11.0")
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        // Required minimum Java 8 for Mockk
+        jvmTarget = "1.8"
+    }
 }
 
 tasks.withType<Test> {
