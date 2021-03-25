@@ -74,5 +74,8 @@ sqldelight {
 
         // Used to store generated test databases to verify migrations
         schemaOutputDirectory = file("src/main/sqldelight/databases")
+
+        // Ensure errors in migration files will result in failed compilation
+        verifyMigrations = true
     }
 }
