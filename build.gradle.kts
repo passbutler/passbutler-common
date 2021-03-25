@@ -71,5 +71,8 @@ tasks.withType<Test> {
 sqldelight {
     database("PassButlerDatabase") {
         packageName = "de.passbutler.common.database"
+
+        // Used to store generated test databases to verify migrations
+        schemaOutputDirectory = file("src/main/sqldelight/databases")
     }
 }
