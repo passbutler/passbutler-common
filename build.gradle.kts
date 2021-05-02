@@ -5,7 +5,7 @@ plugins {
 
     id("org.gradle.java-library")
 
-    id("com.squareup.sqldelight") version "1.4.4"
+    id("com.squareup.sqldelight") version "1.5.0"
 }
 
 buildscript {
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.4.31"
+    val kotlinVersion = "1.4.32"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
@@ -41,7 +41,7 @@ dependencies {
     implementation("org.json:json:20201115")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:coroutines-extensions:1.4.4")
+    implementation("com.squareup.sqldelight:coroutines-extensions:1.5.0")
 
     // Retrofit with OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
