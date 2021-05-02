@@ -33,19 +33,19 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
 
     // TinyLog logger
-    val tinylogVersion = "2.2.1"
+    val tinylogVersion = "2.3.1"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // JSON library
-    implementation("org.json:json:20201115")
+    implementation("org.json:json:20210307")
 
     // SQLDelight
     implementation("com.squareup.sqldelight:coroutines-extensions:1.5.0")
 
     // Retrofit with OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
     // JUnit 5
     val junitVersion = "5.7.1"
