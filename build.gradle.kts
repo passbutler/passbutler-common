@@ -19,6 +19,8 @@ buildscript {
 version = "1.0.0"
 group = "de.passbutler.common"
 
+val javaVersion = JavaVersion.VERSION_1_8
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -26,11 +28,11 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.4.32"
+    val kotlinVersion = "1.5.0"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 
     // TinyLog logger
     val tinylogVersion = "2.3.1"
@@ -55,6 +57,11 @@ dependencies {
 
     // Mockk.io
     testImplementation("io.mockk:mockk:1.11.0")
+}
+
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
 
 tasks.withType<KotlinCompile> {
