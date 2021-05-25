@@ -25,6 +25,8 @@ object RandomGenerator {
      */
     @Throws(IllegalArgumentException::class)
     suspend fun generateRandomString(length: Int, allowedCharacters: String): String {
+        require(length > 0) { "The given length must be greater than 0!" }
+
         val allowedCharactersLength = allowedCharacters.length
         require(allowedCharactersLength != 0) { "The allowed characters string must not be empty!" }
 
