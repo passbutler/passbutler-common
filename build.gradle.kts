@@ -28,11 +28,11 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.5.20"
+    val kotlinVersion = "1.5.30"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // TinyLog logger
     val tinylogVersion = "2.3.2"
@@ -50,7 +50,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
     // JUnit 5
-    val junitVersion = "5.7.2"
+    val junitVersion = "5.8.1"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
