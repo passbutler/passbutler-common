@@ -5,7 +5,7 @@ plugins {
 
     id("org.gradle.java-library")
 
-    id("com.squareup.sqldelight") version "1.5.1"
+    id("com.squareup.sqldelight") version "1.5.2"
 }
 
 buildscript {
@@ -43,7 +43,7 @@ dependencies {
     implementation("org.json:json:20210307")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:coroutines-extensions:1.5.1")
+    implementation("com.squareup.sqldelight:coroutines-extensions:1.5.2")
 
     // Retrofit with OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
