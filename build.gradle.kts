@@ -5,7 +5,7 @@ plugins {
 
     id("org.gradle.java-library")
 
-    id("com.squareup.sqldelight") version "1.5.2"
+    id("com.squareup.sqldelight") version "1.5.3"
 }
 
 buildscript {
@@ -28,35 +28,35 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.5.30"
+    val kotlinVersion = "1.6.0"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // TinyLog logger
-    val tinylogVersion = "2.3.2"
+    val tinylogVersion = "2.4.0"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
     // JSON library
-    implementation("org.json:json:20210307")
+    implementation("org.json:json:20211205")
 
     // SQLDelight
-    implementation("com.squareup.sqldelight:coroutines-extensions:1.5.2")
+    implementation("com.squareup.sqldelight:coroutines-extensions:1.5.3")
 
     // Retrofit with OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.2")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     // JUnit 5
-    val junitVersion = "5.8.1"
+    val junitVersion = "5.8.2"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("io.mockk:mockk:1.12.1")
 }
 
 java {
