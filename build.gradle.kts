@@ -28,14 +28,14 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlinVersion = "1.6.0"
+    val kotlinVersion = "1.6.10"
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     // Kotlin Coroutines core
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
 
     // TinyLog logger
-    val tinylogVersion = "2.4.0"
+    val tinylogVersion = "2.4.1"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylogVersion")
     implementation("org.tinylog:tinylog-impl:$tinylogVersion")
 
@@ -56,7 +56,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // Mockk.io
-    testImplementation("io.mockk:mockk:1.12.1")
+    testImplementation("io.mockk:mockk:1.12.2")
 }
 
 java {
