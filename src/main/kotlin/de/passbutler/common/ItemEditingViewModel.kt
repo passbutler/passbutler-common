@@ -70,6 +70,10 @@ class ItemEditingViewModel private constructor(
         itemModel.value.asExistingOrNull()?.item?.modified
     }
 
+    val deleted = DependentValueGetterBindable(itemModel) {
+        itemModel.value.asExistingOrNull()?.item?.deleted
+    }
+
     val created = DependentValueGetterBindable(itemModel) {
         itemModel.value.asExistingOrNull()?.item?.created
     }
