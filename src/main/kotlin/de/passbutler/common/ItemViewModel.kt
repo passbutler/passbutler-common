@@ -23,6 +23,9 @@ class ItemViewModel(
     val id
         get() = item.id
 
+    val isSharedItem
+        get() = item.userId != loggedInUserViewModel.id
+
     val title
         get() = itemData?.title
 
